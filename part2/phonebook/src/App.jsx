@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import personService from './services/persons'
-import persons from './services/persons'
 import Notification from './components/Notification'
 
 const Filter = ({query, handleQueryChange}) => {
