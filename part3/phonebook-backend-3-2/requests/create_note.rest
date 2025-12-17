@@ -1,6 +1,6 @@
-PUT https://fullstack-open-render-test-zeeeeth.onrender.com/api/persons/69425ef895bbf85a47ef379b
+DELETE https://fullstack-open-render-test-zeeeeth.onrender.com/api/persons/69426ab40beb15015b5f4cd9
 Content-Type: application/json
 
 {
-  "number": "new number"
+  "number": "new sample number"
 }
