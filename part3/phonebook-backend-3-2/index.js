@@ -35,31 +35,22 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-// const generateId = () => {
-//   const maxId =
-//     persons.length > 0 ? Math.max(...persons.map((n) => Number(n.id))) : 0
-//   return String(maxId + 1)
-// }
+app.post('/api/persons', (request, response) => {
+  const body = request.body
 
-// app.post('/api/persons', (request, response) => {
-//   const body = request.body
+  if (!body.name || !body.number) {
+    return response.status(400).json({error: 'name or number missing'})
+  }
 
-//   if (!body.name || !body.number) {
-//     return response.status(400).json({
-//       error: 'name or number missing',
-//     })
-//   }
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
 
-//   const note = {
-//     name: body.name,
-//     number: body.number,
-//     id: generateId(),
-//   }
-
-//   persons = persons.concat(note)
-
-//   response.json(note)
-// })
+  person.save()
+    .then(savedPerson => response.json(savedPerson))
+    .catch(error => next(error))
+})
 
 // app.delete('/api/persons/:id', (request, response) => {
 //   const id = request.params.id
