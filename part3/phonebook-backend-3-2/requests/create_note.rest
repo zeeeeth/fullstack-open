@@ -1,7 +1,6 @@
-POST http://localhost:3001/api/notes
+PUT https://fullstack-open-render-test-zeeeeth.onrender.com/api/persons/69425ef895bbf85a47ef379b
 Content-Type: application/json
 
 {
-  "content": "VS code rest client is pretty handy tool",
-  "important": true
+  "number": "new number"
 }

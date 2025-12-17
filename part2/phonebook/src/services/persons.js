@@ -11,11 +11,10 @@ const create = newPerson => {
     return request.then(response => response.data)
 }
 
-// Do not use update function in 3.9
-// const update = (id, newPerson) => {
-//     const request = axios.put(`${baseURL}/${id}`, newPerson)
-//     return request.then(response => response.data)
-// }
+const update = (id, newPerson) => {
+    const request = axios.put(`${baseURL}/${id}`, newPerson)
+    return request.then(response => response.data)
+}
 
 const deletePerson = (id) => {
     const request = axios.delete(`${baseURL}/${id}`)
@@ -25,6 +24,6 @@ const deletePerson = (id) => {
 export default {
     getAll: getAll,
     create: create,
-    // update: update,
+    update: update,
     deletePerson: deletePerson
 }
