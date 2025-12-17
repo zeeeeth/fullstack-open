@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseURL = 'http://localhost:3001/persons'
+const baseURL = 'http://localhost:3001/api/persons'
 
 const getAll = () => {
     const request = axios.get(baseURL)
@@ -11,10 +11,11 @@ const create = newPerson => {
     return request.then(response => response.data)
 }
 
-const update = (id, newPerson) => {
-    const request = axios.put(`${baseURL}/${id}`, newPerson)
-    return request.then(response => response.data)
-}
+// Do not use update function in 3.9
+// const update = (id, newPerson) => {
+//     const request = axios.put(`${baseURL}/${id}`, newPerson)
+//     return request.then(response => response.data)
+// }
 
 const deletePerson = (id) => {
     const request = axios.delete(`${baseURL}/${id}`)
@@ -24,6 +25,6 @@ const deletePerson = (id) => {
 export default {
     getAll: getAll,
     create: create,
-    update: update,
+    // update: update,
     deletePerson: deletePerson
 }

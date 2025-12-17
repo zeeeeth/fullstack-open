@@ -25,21 +25,22 @@ const Form = ({persons, setPersons, displayNotification}) => {
   const addPerson = (event) => {
     event.preventDefault()
     if (persons.some(person => person.name === newName)) {
-      personService
-        .update(
-          persons.find(person => person.name === newName).id,
-          { name: newName, number: newNumber }
-        )
-        .then(returnedPerson => {
-          setPersons(
-            persons.map(person =>
-              person.id !== returnedPerson.id ? person : returnedPerson
-            )
-          )
-          setNewName('')
-          setNewNumber('')
-          displayNotification(`Updated ${returnedPerson.name}'s number to ${returnedPerson.number}`, 'success')
-        })
+      // personService
+      //   .update(
+      //     persons.find(person => person.name === newName).id,
+      //     { name: newName, number: newNumber }
+      //   )
+      //   .then(returnedPerson => {
+      //     setPersons(
+      //       persons.map(person =>
+      //         person.id !== returnedPerson.id ? person : returnedPerson
+      //       )
+      //     )
+      //     setNewName('')
+      //     setNewNumber('')
+      //     displayNotification(`Updated ${returnedPerson.name}'s number to ${returnedPerson.number}`, 'success')
+      //   })
+      displayNotification(`${newName} is already added to phonebook`, 'error')
     } else {
       const personObject = {
         name: newName,
