@@ -28,7 +28,7 @@ const Form = ({persons, setPersons, displayNotification}) => {
       const existing = persons.find(person => person.name === newName)
 
       personService
-        .update(existing.id, { name: newName, number: newNumber })
+        .update(existing.id, { name: existing.name, number: newNumber })
         .then(returnedPerson => {
           setPersons(
             persons.map(person =>
@@ -87,7 +87,7 @@ const PersonList = ({persons, handleDelete}) => {
       <ul>
         {persons.map((person) => {
           return (
-          <li key={person.name}>
+          <li key={person.id}>
             {person.name} {person.number} 
             <button onClick={() => handleDelete(person)}>delete</button>
           </li>
