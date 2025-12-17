@@ -16,8 +16,13 @@ morgan.token('body', (request) => {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
+app.get('/info', (request, response) => {
+  Person.find({}).then((persons) => {
+    response.send(
+      `<p>Phonebook has info for ${persons.length} people</p>
+       <p>${new Date()}</p>`
+    )
+  })
 })
 
 app.get('/api/persons', (request, response) => {
@@ -35,7 +40,7 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name || !body.number) {
@@ -52,12 +57,33 @@ app.post('/api/persons', (request, response) => {
     .catch(error => next(error))
 })
 
-// app.delete('/api/persons/:id', (request, response) => {
-//   const id = request.params.id
-//   persons = persons.filter((note) => note.id !== id)
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
 
-//   response.status(204).end()
-// })
+app.put('/api/persons/:id', (request, response, next) => {
+
+  const body = request.body
+  
+  Person.findById(request.params.id)
+    .then(person => {
+      if (!person) {
+        return response.status(404).end()
+      }
+
+      person.number = body.number
+
+      return person.save()
+        .then(updatedPerson => {
+          response.json(updatedPerson)
+        })
+        .catch(error => next(error))
+    })
+})
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
