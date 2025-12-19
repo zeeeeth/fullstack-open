@@ -96,13 +96,22 @@ describe('deleting a blog', () => {
         assert.ok(!blogsAfterDelete.includes(blogToDelete))
     })
 
-    test('returns 404 with invalid id', async () => {
-        const id = await helper.nonExistingId()
+    test('returns 404 with well-formed id that does not exist', async () => {
+        const validButMissingId = await helper.nonExistingId()
 
         await api
-            .delete(`/api/blogs/${id}`)
+            .delete(`/api/blogs/${validButMissingId}`)
             .expect(404)
     })
+
+    test('returns 400 with malformatted id', async () => {
+    const malformattedId = '12345'
+
+    await api
+        .delete(`/api/blogs/${malformattedId}`)
+        .expect(400)
+    })
+
 })
 
 after(async () => {
