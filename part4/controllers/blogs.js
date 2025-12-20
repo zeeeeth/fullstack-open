@@ -1,7 +1,9 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
-    
+const jwt = require('jsonwebtoken')
+const { userExtractor } = require('../utils/middleware')
+
 blogsRouter.get('/', async (request, response) => {
     const blogs = await Blog
         .find({})
@@ -9,32 +11,64 @@ blogsRouter.get('/', async (request, response) => {
     response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
-    const blog = new Blog(request.body)
+blogsRouter.get('/:id', async (request, response) => {
+    const blog = await Blog.findById(request.params.id).populate('user', { username: 1, name: 1 })
+    if (blog) {
+        response.status(200).json(blog.toJSON())
+    } else {
+        response.status(404).end()
+    }
+})
+
+blogsRouter.post('/', userExtractor, async (request, response) => {
+    const body = request.body
     
-    if (!blog.title || !blog.url)
+    // Title and URL verification
+    if (!body.title || !body.url)
         return response.status(400).json({ error: 'title and url are required' })
 
-    // First user found in the database designated as creator
-    const user = await User.findOne({})
-    blog.user = user._id
+    if (!request.user) {
+        return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    const blog = new Blog({
+        title: body.title,
+        author: body.author,
+        url: body.url,
+        likes: body.likes || 0,
+        user: request.user._id
+    })
 
     const savedBlog = await blog.save()
-
-    // Add blog to user's blog array
-    user.blogs = user.blogs.concat(blog._id)
-    await user.save()
+    request.user.blogs = request.user.blogs.concat(savedBlog._id)
+    await request.user.save()
 
     response.status(201).json(savedBlog)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
-    const result = await Blog.findByIdAndDelete(request.params.id)
-    if (!result) {
-        return response.status(404).end()
-    } else {
-        return response.status(204).end()
+blogsRouter.delete('/:id', userExtractor, async (request, response) => {
+
+    if (!request.user) {
+        return response.status(401).json({ error: 'token missing or invalid' })
     }
+
+    const blog = await Blog.findById(request.params.id)
+
+    // Blog existence verification
+    if (!blog) {
+        return response.status(404).end()
+    }
+
+    // Blog ownership verification
+    if (blog.user.toString() !== request.user._id.toString()) {
+        return response.status(403).json({ error: 'only the creator can delete a blog' })
+    }
+
+    await Blog.findByIdAndDelete(request.params.id)
+    request.user.blogs = request.user.blogs.filter(b => b.toString() !== request.params.id)
+    await request.user.save()
+
+    response.status(204).end()
 })
 
 blogsRouter.put('/:id', async (request, response) => {

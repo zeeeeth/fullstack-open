@@ -7,22 +7,28 @@ const helper = require('./test_helper')
 const bcrypt = require('bcrypt')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
 const api = supertest(app)
+let tokenForUserWithBlogs = null
 
 beforeEach(async () => {
     await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
-
     await User.deleteMany({})
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const user =  new User(helper.initialRootUser)
-    user.passwordHash = passwordHash
-    await user.save()
+
+    const users = await User.insertMany(helper.hashedInitialUsers)
+    await Blog.insertMany(
+        helper.initialBlogs.map(blog => ({...blog, user: users[0]._id}))
+    )
+
+    tokenForUserWithBlogs = jwt.sign(
+        { username: users[0].username, id: users[0]._id },
+        process.env.SECRET
+    )
 })
 
-describe('reading the blogs', () => {
-    test('blogs returned as json', async () => {
+describe('With initial blogs saved', () => {
+    test('blogs are returned as json', async () => {
         await api
             .get('/api/blogs')
             .expect(200)
@@ -41,6 +47,30 @@ describe('reading the blogs', () => {
             assert.strictEqual(blog._id, undefined)
         })
     })
+
+    test('able to get a specific blog by id', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogToView = blogsAtStart[0]
+        const response = await api
+                        .get(`/api/blogs/${blogToView.id}`)
+                        .expect(200)
+                        .expect('Content-Type', /application\/json/)
+        assert.strictEqual(response.body.id, blogToView.id)
+    })
+
+    test('returns 404 with well-formed id that does not exist', async () => {
+        const validButMissingId = await helper.nonExistingId()
+        await api
+            .get(`/api/blogs/${validButMissingId}`)
+            .expect(404)
+    })
+
+    test('returns 400 with malformatted id', async () => {
+        const malformattedId = '12345'
+        await api
+            .get(`/api/blogs/${malformattedId}`)
+            .expect(400)
+    })
 })
 
 describe('posting a blog', () => {
@@ -48,6 +78,7 @@ describe('posting a blog', () => {
     test('increases the total number of blogs by one', async () => {
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
             .send(helper.validBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
@@ -59,6 +90,7 @@ describe('posting a blog', () => {
     test('posts a blog with the correct contents', async () => {
         const response = await api
                             .post('/api/blogs')
+                            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
                             .send(helper.validBlog)
                             .expect(201)
         const newBlog = response.body
@@ -70,6 +102,7 @@ describe('posting a blog', () => {
     test('with likes missing defaults to the value 0', async () => {
         const response = await api
                             .post('/api/blogs')
+                            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
                             .send(helper.blogWithoutLikes)
                             .expect(201)
         const newBlog = response.body
@@ -79,6 +112,7 @@ describe('posting a blog', () => {
     test('with missing title responds with status code 400', async () => {
         const response = await api
                             .post('/api/blogs')
+                            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
                             .send(helper.blogWithoutTitle)
                             .expect(400)
     })
@@ -86,18 +120,61 @@ describe('posting a blog', () => {
     test('with missing Url responds with status code 400', async () => {
         const response = await api
                             .post('/api/blogs')
+                            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
                             .send(helper.blogWithoutUrl)
                             .expect(400)
+    })
+
+    test('without token responds with status code 401', async () => {
+        const response = await api
+                            .post('/api/blogs')
+                            .send(helper.validBlog)
+                            .expect(401)
+    })
+
+    test('creates a blog associated with the user', async () => {
+        const usersAtStart = await helper.usersInDb()
+        const user = usersAtStart[0]
+
+        // make a token for that user
+        const token = jwt.sign(
+            { username: user.username, id: user.id },
+            process.env.SECRET
+        )
+
+        const newBlog = {
+            title: 'associated blog',
+            author: 'me',
+            url: 'http://example.com',
+            likes: 7,
+        }
+
+        const created = await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        // 1) blog.user is set
+        assert.strictEqual(created.body.user.toString(), user.id.toString())
+
+        // 2) user.blogs contains the blog id
+        const usersAtEnd = await helper.usersInDb()
+        const updatedUser = usersAtEnd.find(u => u.id === user.id)
+
+        assert.ok(updatedUser.blogs.map(b => b.toString()).includes(created.body.id.toString()))
     })
 })
 
 describe('deleting a blog', () => {
-    test('succeeds with valid id', async () => {
+    test('succeeds with valid id and correct user logged in', async () => {
         const initialBlogs = await helper.blogsInDb()
         const blogToDelete = initialBlogs[0]
-
+        assert.ok(blogToDelete)
         await api
             .delete(`/api/blogs/${blogToDelete.id}`)
+            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
             .expect(204)
         
         const blogsAfterDelete = await helper.blogsInDb()
@@ -110,6 +187,7 @@ describe('deleting a blog', () => {
 
         await api
             .delete(`/api/blogs/${validButMissingId}`)
+            .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
             .expect(404)
     })
 
@@ -118,9 +196,33 @@ describe('deleting a blog', () => {
 
     await api
         .delete(`/api/blogs/${malformattedId}`)
+        .set('Authorization', `Bearer ${tokenForUserWithBlogs}`)
         .expect(400)
     })
 
+    test('fails with 403 if user trying to delete the blog did not create it', async () => {
+        // create a new user
+        const newUser = {
+            username: 'anotheruser',
+            name: 'Another User',
+            password: 'anotherpassword'
+        }
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(201)
+        const loginResponse = await api
+            .post('/api/login')
+            .send({ username: newUser.username, password: newUser.password })
+            .expect(200)
+        const anotherUserToken = loginResponse.body.token
+        const initialBlogs = await helper.blogsInDb()
+        const blogToDelete = initialBlogs[0]
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .set('Authorization', `Bearer ${anotherUserToken}`)
+            .expect(403)
+    })
 })
 
 describe('when there is initially one user in db', () => {
@@ -146,7 +248,7 @@ describe('when there is initially one user in db', () => {
 
         const result = await api
             .post('/api/users')
-            .send(helper.userWithTakenUsername)
+            .send({ username: helper.hashedInitialUsers[0].username, name: 'Another Name', password: 'AnotherPassword' })
             .expect(400)
             .expect('Content-Type', /application\/json/)
         
@@ -190,7 +292,7 @@ describe('logging in', () => {
     test('succeeds with correct credentials', async () => {
         const result = await api
             .post('/api/login')
-            .send({ username: helper.initialRootUser.username, password: helper.initialRootUser.password })
+            .send({ username: helper.plaintextInitialUsers[0].username, password: helper.plaintextInitialUsers[0].password })
             .expect(200)
             .expect('Content-Type', /application\/json/) 
         assert.ok(result.body.token)
@@ -199,7 +301,7 @@ describe('logging in', () => {
     test('fails with incorrect credentials', async () => {
         const result = await api
             .post('/api/login')
-            .send({ username: helper.initialRootUser.username, password: 'wrongpassword' })
+            .send({ username: helper.plaintextInitialUsers[0].username, password: 'wrongpassword' })
             .expect(401)
             .expect('Content-Type', /application\/json/) 
         assert.ok(result.body.error.includes('invalid username or password'))

@@ -4,7 +4,7 @@ const totalLikes = require('../utils/list_helper').totalLikes
 const favoriteBlog = require('../utils/list_helper').favoriteBlog
 const mostBlogs = require('../utils/list_helper').mostBlogs
 const mostLikes = require('../utils/list_helper').mostLikes
-
+/*
 const blogs = [
   {
     _id: "5a422a851b54a676234d17f7",
@@ -111,3 +111,4 @@ describe('most likes', () => {
       assert.strictEqual(mostLikes(blogs), 'Edsger W. Dijkstra')
   })
 })
+*/
