@@ -94,6 +94,36 @@ const usersInDb = async () => {
   return users.map(u => u.toJSON())
 }
 
+const initialRootUser = {
+  username: 'root',
+  name: 'Superuser',
+  password: 'sekret'
+}
+
+const validUser = {
+  username: 'myUsername',
+  name: 'myName',
+  password: 'myPassword'
+}
+
+const userWithTakenUsername = {
+  username: 'root',
+  name: 'newName',
+  password: 'newPassword'
+}
+
+const userWithShortUsername = {
+    username: 'ro',
+    name: 'waytooshort',
+    password: 'validpassword'
+}
+
+const userWithShortPassword = {
+    username: 'roooot',
+    name: 'waytooshortagain',
+    password: 'pw'
+}
+
 module.exports = {
     initialBlogs,
     validBlog,
@@ -102,5 +132,10 @@ module.exports = {
     blogWithoutUrl,
     blogsInDb,
     nonExistingId,
-    usersInDb
+    usersInDb,
+    initialRootUser,
+    validUser,
+    userWithTakenUsername,
+    userWithShortUsername,
+    userWithShortPassword
 }
