@@ -11,6 +11,10 @@ const app = express()
 
 mongoose.set('strictQuery', false)
 
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('MONGODB_URI:', config.MONGODB_URI)
+
+
 mongoose.connect(config.MONGODB_URI, { family: 4 })
 .then(() => {
     logger.info('Connected to MongoDB')

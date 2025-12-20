@@ -14,6 +14,11 @@ const blogSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         required: false
+    },
+    // Expand blog to contain information on the creator
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 })
 

@@ -13,6 +13,12 @@ const api = supertest(app)
 beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
+
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user =  new User(helper.initialRootUser)
+    user.passwordHash = passwordHash
+    await user.save()
 })
 
 describe('reading the blogs', () => {
@@ -57,6 +63,7 @@ describe('posting a blog', () => {
                             .expect(201)
         const newBlog = response.body
         delete newBlog.id
+        delete newBlog.user
         assert.deepStrictEqual(newBlog, helper.validBlog)
     })
 
@@ -117,15 +124,6 @@ describe('deleting a blog', () => {
 })
 
 describe('when there is initially one user in db', () => {
-    beforeEach(async () => {
-        await User.deleteMany({})
-
-        const passwordHash = await bcrypt.hash('sekret', 10)
-        const user =  new User(helper.initialRootUser)
-        user.passwordHash = passwordHash
-
-        await user.save()
-    })
 
     test('creation succeeds with a fresh username', async () => {
         const usersAtStart = await helper.usersInDb()
@@ -184,6 +182,27 @@ describe('when there is initially one user in db', () => {
         const usersAtEnd = await helper.usersInDb()
         assert(result.body.error.includes('invalid user created: password must be at least 3 characters long'))
         assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+    })
+})
+
+describe('logging in', () => {
+
+    test('succeeds with correct credentials', async () => {
+        const result = await api
+            .post('/api/login')
+            .send({ username: helper.initialRootUser.username, password: helper.initialRootUser.password })
+            .expect(200)
+            .expect('Content-Type', /application\/json/) 
+        assert.ok(result.body.token)
+    })
+
+    test('fails with incorrect credentials', async () => {
+        const result = await api
+            .post('/api/login')
+            .send({ username: helper.initialRootUser.username, password: 'wrongpassword' })
+            .expect(401)
+            .expect('Content-Type', /application\/json/) 
+        assert.ok(result.body.error.includes('invalid username or password'))
     })
 })
 
