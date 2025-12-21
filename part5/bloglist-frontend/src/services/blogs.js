@@ -32,7 +32,7 @@ const remove = async id => {
 
   if (window.confirm(`Remove blog ${blog.data.title} by ${blog.data.author}?`)) {
     const response = await axios.delete(`${baseUrl}/${id}`, config)
-    return response.data  
+    return response.data
   }
 }
 

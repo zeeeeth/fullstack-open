@@ -1,61 +1,61 @@
 import { useState } from 'react'
 
 const AddBlogForm = ({ createBlog, toggleVisibility }) => {
-    const [title, setTitle] = useState('')
-    const [author, setAuthor] = useState('')
-    const [url, setUrl] = useState('')
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
+  const [url, setUrl] = useState('')
 
-    const addBlog = async (event) => {
-        event.preventDefault()
-        const ok = await createBlog({ title, author, url})
+  const addBlog = async (event) => {
+    event.preventDefault()
+    const ok = await createBlog({ title, author, url })
 
-        toggleVisibility && toggleVisibility()
+    toggleVisibility && toggleVisibility()
 
-        if (ok) {
-            setTitle('')
-            setAuthor('')
-            setUrl('')
-        }
+    if (ok) {
+      setTitle('')
+      setAuthor('')
+      setUrl('')
     }
+  }
 
-    return (
+  return (
+    <div>
+      <h2>create new</h2>
+      <form onSubmit={addBlog}>
         <div>
-            <h2>create new</h2>
-            <form onSubmit={addBlog}>
-                <div>
-                    <label>
+          <label>
                         title:
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={({ target }) => setTitle(target.value)}
-                        />
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        author:
-                        <input
-                            type="text"
-                            value={author}
-                            onChange={({ target }) => setAuthor(target.value)}
-                        />
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        url:
-                        <input
-                            type="text"
-                            value={url}
-                            onChange={({ target }) => setUrl(target.value)}
-                        />
-                    </label>
-                </div>
-                <button type="submit">create</button>
-            </form>
+            <input
+              type="text"
+              value={title}
+              onChange={({ target }) => setTitle(target.value)}
+            />
+          </label>
         </div>
-    )
+        <div>
+          <label>
+                        author:
+            <input
+              type="text"
+              value={author}
+              onChange={({ target }) => setAuthor(target.value)}
+            />
+          </label>
+        </div>
+        <div>
+          <label>
+                        url:
+            <input
+              type="text"
+              value={url}
+              onChange={({ target }) => setUrl(target.value)}
+            />
+          </label>
+        </div>
+        <button type="submit">create</button>
+      </form>
+    </div>
+  )
 }
 
 export default AddBlogForm

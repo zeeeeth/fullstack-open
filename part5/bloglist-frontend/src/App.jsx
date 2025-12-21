@@ -14,7 +14,7 @@ const App = () => {
   const [notification, setNotification] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
-  
+
   /* Load blogs on startup */
   useEffect(() => {
     const loadInitialBlogs = async () => {
@@ -41,7 +41,7 @@ const App = () => {
       blogService.setToken(user.token)
     }
   }, [])
-  
+
   const notify = (message, type='info') => {
     setNotification({ message, type })
     setTimeout(() => {
@@ -57,8 +57,8 @@ const App = () => {
       blogService.setToken(user.token)
       notify(`login as ${user.name} successful`, 'success')
       return true
-    } catch (error) {
-      notify(`wrong username or password`, 'error')
+    } catch {
+      notify('wrong username or password', 'error')
       return false
     }
   }
@@ -77,7 +77,7 @@ const App = () => {
   const updateBlog = async (id, blogData) => {
     try {
       const response = await blogService.update(blogData)
-      setBlogs(blogs.map((blog) => blog.id === id ? {...response, user : blog.user} : blog))
+      setBlogs(blogs.map((blog) => blog.id === id ? { ...response, user : blog.user } : blog))
     } catch (error) {
       notify(`Error liking blog: ${error.message}`, 'error')
     }

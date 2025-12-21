@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const Blog = ({ blog, user, updateBlog, removeBlog }) => {
-  
+
   const [isExpanded, setIsExpanded] = useState(false)
   const blogStyle = {
     paddingTop: 10,
@@ -16,7 +16,7 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
   }
 
   const incrementLikes = () => {
-    const newBlog = { ...blog, likes: (blog.likes || 0) + 1}
+    const newBlog = { ...blog, likes: (blog.likes || 0) + 1 }
     updateBlog(blog.id, newBlog)
   }
 
@@ -32,7 +32,7 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
       </div>
     )
   }
-  
+
   return (
     <div style={blogStyle}>
       <div>
@@ -42,7 +42,7 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
         </button>
       </div>
       {isExpanded && details()}
-      <div style={{display: blog.user && blog.user.username === user.username ? '' : 'none'}}>
+      <div style={{ display: blog.user && blog.user.username === user.username ? '' : 'none' }}>
         <button type="button" onClick={() => removeBlog(blog.id)}>remove</button>
       </div>
     </div>
