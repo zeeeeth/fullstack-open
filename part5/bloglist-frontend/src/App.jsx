@@ -71,7 +71,15 @@ const App = () => {
       return createdBlog
     } catch (error) {
       notify(`Error creating blog: ${error.message}`, 'error')
-      return null
+    }
+  }
+
+  const updateBlog = async (id, blogData) => {
+    try {
+      const response = await blogService.update(blogData)
+      setBlogs(blogs.map((blog) => blog.id === id ? {...response, user : blog.user} : blog))
+    } catch (error) {
+      notify(`Error liking blog: ${error.message}`, 'error')
     }
   }
 
@@ -93,10 +101,7 @@ const App = () => {
         <Notification notification={notification}/>
         <h2>blogs</h2>
         <LoginInformation user={user}/>
-        <Togglable buttonLabel="Add blog">
-          <AddBlogForm createBlog={addBlog}/>
-        </Togglable>
-        <BlogList blogs={blogs} user={user} />
+        <BlogList blogs={blogs} user={user} createBlog={addBlog} updateBlog={updateBlog}/>
       </div>
     )
   }
