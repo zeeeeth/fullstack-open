@@ -63,7 +63,7 @@ const App = () => {
     }
   }
 
-  const handleCreateBlog = async (blogData) => {
+  const addBlog = async (blogData) => {
     try {
       const createdBlog = await blogService.create(blogData)
       setBlogs(blogs.concat(createdBlog))
@@ -94,7 +94,7 @@ const App = () => {
         <h2>blogs</h2>
         <LoginInformation user={user}/>
         <Togglable buttonLabel="Add blog">
-          <AddBlogForm addBlog={handleCreateBlog}/>
+          <AddBlogForm createBlog={addBlog}/>
         </Togglable>
         <BlogList blogs={blogs} user={user} />
       </div>

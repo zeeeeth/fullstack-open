@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
-const AddBlogForm = ({ addBlog, toggleVisibility }) => {
+const AddBlogForm = ({ createBlog, toggleVisibility }) => {
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
     const [url, setUrl] = useState('')
 
-    const handleSubmit = async (event) => {
+    const addBlog = async (event) => {
         event.preventDefault()
-        const ok = await addBlog({ title, author, url})
+        const ok = await createBlog({ title, author, url})
 
         toggleVisibility && toggleVisibility()
 
@@ -21,7 +21,7 @@ const AddBlogForm = ({ addBlog, toggleVisibility }) => {
     return (
         <div>
             <h2>create new</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={addBlog}>
                 <div>
                     <label>
                         title:
