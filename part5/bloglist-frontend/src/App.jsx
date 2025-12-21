@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Notification from './components/Notification'
 import LoginInformation from './components/LoginInformation'
 import LoginForm from './components/LoginForm'
+import AddBlogForm from './components/AddBlogForm'
 import BlogList from './components/BlogList'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -56,8 +57,20 @@ const App = () => {
       notify(`login as ${user.name} successful`, 'success')
       return true
     } catch (error) {
-      notify(`Unsuccessful login: ${error.message}`, 'error')
+      notify(`wrong username or password`, 'error')
       return false
+    }
+  }
+
+  const handleCreateBlog = async (blogData) => {
+    try {
+      const createdBlog = await blogService.create(blogData)
+      setBlogs(blogs.concat(createdBlog))
+      notify(`a new blog "${createdBlog.title}" by ${createdBlog.author} added`, 'success')
+      return createdBlog
+    } catch (error) {
+      notify(`Error creating blog: ${error.message}`, 'error')
+      return null
     }
   }
 
@@ -66,16 +79,24 @@ const App = () => {
   if (isLoading)
     return (<div>Loading blogs...</div>)
 
-  return (
-    <div>
-      <Notification notification={notification}/>
-      {!user && <LoginForm handleLogin={handleLogin}/>}
-      {user && <h2>blogs</h2>}
-      {user && <LoginInformation user={user}/>}
-      {user && <BlogList blogs={blogs} user={user} />}
-    </div>
-  )
-  
+  if (!user) {
+    return (
+      <div>
+        <Notification notification={notification}/>
+        <LoginForm handleLogin={handleLogin}/>
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        <Notification notification={notification}/>
+        <h2>blogs</h2>
+        <LoginInformation user={user}/>
+        <AddBlogForm onBlogCreate={handleCreateBlog}/>
+        <BlogList blogs={blogs} user={user} />
+      </div>
+    )
+  }
 }
 
 export default App
