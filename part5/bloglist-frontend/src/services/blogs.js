@@ -23,9 +23,22 @@ const update = async newBlog => {
   return response.data
 }
 
+const remove = async id => {
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const blog = await axios.get(`${baseUrl}/${id}`)
+
+  if (window.confirm(`Remove blog ${blog.data.title} by ${blog.data.author}?`)) {
+    const response = await axios.delete(`${baseUrl}/${id}`, config)
+    return response.data  
+  }
+}
+
 const getAll = () => {
   const request = axios.get(baseUrl)
   return request.then(response => response.data)
 }
 
-export default { getAll, setToken, create, update }
+export default { getAll, setToken, create, update, remove }

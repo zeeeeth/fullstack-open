@@ -83,6 +83,15 @@ const App = () => {
     }
   }
 
+  const removeBlog = async (id) => {
+    try {
+      await blogService.remove(id)
+      setBlogs(blogs.filter((blog) => blog.id !== id))
+    } catch (error) {
+      notify(`Error deleting blog: ${error.message}`, 'error')
+    }
+  }
+
   if (isError)
     return (<div>Error loading blogs</div>)
   if (isLoading)
@@ -101,7 +110,7 @@ const App = () => {
         <Notification notification={notification}/>
         <h2>blogs</h2>
         <LoginInformation user={user}/>
-        <BlogList blogs={blogs} user={user} createBlog={addBlog} updateBlog={updateBlog}/>
+        <BlogList blogs={blogs} user={user} createBlog={addBlog} updateBlog={updateBlog} removeBlog={removeBlog}/>
       </div>
     )
   }

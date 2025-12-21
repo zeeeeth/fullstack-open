@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import blogService from '../services/blogs'
 
-const Blog = ({ blog, user, updateBlog }) => {
+const Blog = ({ blog, user, updateBlog, removeBlog }) => {
   
   const [isExpanded, setIsExpanded] = useState(false)
   const blogStyle = {
@@ -20,6 +19,19 @@ const Blog = ({ blog, user, updateBlog }) => {
     const newBlog = { ...blog, likes: (blog.likes || 0) + 1}
     updateBlog(blog.id, newBlog)
   }
+
+  const details = () => {
+    return (
+      <div>
+        <div>{blog.url}</div>
+        <div>
+          likes {blog.likes}
+          <button type="button" onClick={incrementLikes}>like</button>
+        </div>
+        <div>{blog.user && blog.user.name}</div>
+      </div>
+    )
+  }
   
   return (
     <div style={blogStyle}>
@@ -29,14 +41,9 @@ const Blog = ({ blog, user, updateBlog }) => {
           {isExpanded ? 'hide' : 'view'}
         </button>
       </div>
-      <div style={{display : isExpanded ? '' : 'none'}}>
-        <div>{blog.url}</div>
-        <div>
-          likes {blog.likes}
-          <button type="button" onClick={incrementLikes}>like</button>
-          {/* Like button functionality can be added here */}
-        </div>
-        <div>{blog.user && blog.user.name}</div>
+      {isExpanded && details()}
+      <div style={{display: blog.user && blog.user.username === user.username ? '' : 'none'}}>
+        <button type="button" onClick={() => removeBlog(blog.id)}>remove</button>
       </div>
     </div>
   )
