@@ -4,6 +4,7 @@ import LoginInformation from './components/LoginInformation'
 import LoginForm from './components/LoginForm'
 import AddBlogForm from './components/AddBlogForm'
 import BlogList from './components/BlogList'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -92,7 +93,9 @@ const App = () => {
         <Notification notification={notification}/>
         <h2>blogs</h2>
         <LoginInformation user={user}/>
-        <AddBlogForm onBlogCreate={handleCreateBlog}/>
+        <Togglable buttonLabel="Add blog">
+          <AddBlogForm addBlog={handleCreateBlog}/>
+        </Togglable>
         <BlogList blogs={blogs} user={user} />
       </div>
     )
