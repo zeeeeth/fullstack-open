@@ -36,7 +36,8 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
   return (
     <div style={blogStyle}>
       <div>
-        {blog.title} {blog.author}
+        <span>{blog.title}</span> 
+        <span>{blog.author}</span>
         <button onClick={toggleExpansion}>
           {isExpanded ? 'hide' : 'view'}
         </button>
