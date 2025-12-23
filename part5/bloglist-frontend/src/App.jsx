@@ -79,7 +79,9 @@ const App = () => {
   const updateBlog = async (id, blogData) => {
     try {
       const response = await blogService.update(blogData)
-      setBlogs(blogs.map((blog) => blog.id === id ? { ...response, user : blog.user } : blog))
+      setBlogs(prev =>
+        prev.map((blog) => blog.id === id ? { ...response, user : blog.user } : blog)
+      )
     } catch (error) {
       notify(`Error liking blog: ${error.message}`, 'error')
     }
