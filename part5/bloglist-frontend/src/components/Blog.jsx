@@ -34,7 +34,7 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div data-testid="blog" style={blogStyle}>
       <div>
         <span>{blog.title}</span> 
         <span>{blog.author}</span>

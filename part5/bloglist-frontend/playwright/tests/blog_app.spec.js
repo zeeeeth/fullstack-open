@@ -26,14 +26,14 @@ describe('Blog app with one user', () => {
 })
 
 describe('Blog app with logged in user', () => {
-    beforeEach(async ({ page, request }) => {
+    beforeEach(async ({ page }) => {
         await attemptLogin(page, 'testuser', 'password')
         await expect(page.getByText('Test User logged in')).toBeVisible()
     })
 
     test('can create a blog', async ({ page }) => {
         await createBlog({ page, title: 'Test Blog Title', author: 'Test Author', url: 'http://testblog.com' })
-        await expect(page.getByText('a new blog "Test Blog Title" by Test Author added')).toBeVisible()
+        await expect(page.getByText('Test Blog Title', { exact: true })).toBeVisible()
     })
 
     test('which creates a blog, created blog is visible in the list', async ({ page }) => {
@@ -43,5 +43,20 @@ describe('Blog app with logged in user', () => {
         await expect(page.locator('span', { hasText: 'Test Blog Title' })).toBeVisible()
         await expect(page.locator('span', { hasText: 'Another Blog' })).toBeVisible()
         await expect(page.locator('span', { hasText: 'Third Blog' })).toBeVisible()
+    })
+
+    test('can like a blog', async ({ page }) => {
+        await createBlog({ page, title: 'Test Blog Title', author: 'Test Author', url: 'http://testblog.com' })
+        const blog = page.getByTestId('blog').filter({ hasText: 'Test Blog Title' })
+        await blog.getByRole('button', { name: 'view' }).click()
+        await blog.getByRole('button', { name: 'like' }).click()
+        await expect(blog.getByText('likes 1')).toBeVisible()
+    })
+
+    test('can delete a blog added by self', async ({ page }) => {
+        await createBlog({ page, title: 'Test Blog Title', author: 'Test Author', url: 'http://testblog.com' })
+        const blog = page.getByTestId('blog').filter({ hasText: 'Test Blog Title' })
+        await blog.getByRole('button', { name: 'remove' }).click()
+        await expect(page.getByText('Test Blog Title', { exact: true})).not.toBeVisible()
     })
 })

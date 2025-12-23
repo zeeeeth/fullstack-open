@@ -66,9 +66,11 @@ const App = () => {
   const addBlog = async (blogData) => {
     try {
       const createdBlog = await blogService.create(blogData)
-      setBlogs(blogs.concat(createdBlog))
+      const createdWithUser = { ...createdBlog, user }
+
+      setBlogs(prev => prev.concat(createdWithUser))
       notify(`a new blog "${createdBlog.title}" by ${createdBlog.author} added`, 'success')
-      return createdBlog
+      return createdWithUser
     } catch (error) {
       notify(`Error creating blog: ${error.message}`, 'error')
     }
@@ -86,7 +88,7 @@ const App = () => {
   const removeBlog = async (id) => {
     try {
       await blogService.remove(id)
-      setBlogs(blogs.filter((blog) => blog.id !== id))
+      setBlogs(prev => prev.filter((blog) => blog.id !== id))
     } catch (error) {
       notify(`Error deleting blog: ${error.message}`, 'error')
     }

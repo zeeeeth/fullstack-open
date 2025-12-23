@@ -8,10 +8,8 @@ const AddBlogForm = ({ createBlog, toggleVisibility }) => {
   const addBlog = async (event) => {
     event.preventDefault()
     const ok = await createBlog({ title, author, url })
-
-    toggleVisibility && toggleVisibility()
-
     if (ok) {
+      toggleVisibility && toggleVisibility()
       setTitle('')
       setAuthor('')
       setUrl('')
