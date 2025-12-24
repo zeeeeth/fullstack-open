@@ -28,6 +28,9 @@ const reducer = (state = initialState, action) => {
       const anecdoteToChange = state.find(anecdote => anecdote.id === id)
       const incrementedAnecdote = { ...anecdoteToChange, votes: anecdoteToChange.votes + 1 }
       return state.map(anecdote => (anecdote.id !== id) ? anecdote : incrementedAnecdote)
+    case 'NEW_ANECDOTE':
+      const anecdoteToAdd = action.payload
+      return [...state, anecdoteToAdd]
     default:
       return state
   }
@@ -37,6 +40,13 @@ export const incrementVotes = (id) => {
   return {
     type: 'INCREMENT_VOTE',
     payload: id
+  }
+}
+
+export const createAnecdote = (content) => {
+  return {
+    type: 'NEW_ANECDOTE',
+    payload: asObject(content)
   }
 }
 
