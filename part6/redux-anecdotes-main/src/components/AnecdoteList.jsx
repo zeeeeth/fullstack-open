@@ -2,6 +2,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { incrementVotes } from '../reducers/anecdoteReducer';
 import { setNotification } from '../reducers/notificationReducer';
 import anecdoteService from '../services/anecdotes';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAnecdotes, updateAnecdote } from '../requests';
 
 const Anecdote = ({ anecdote, handleVote }) => {
 
@@ -10,21 +12,53 @@ const Anecdote = ({ anecdote, handleVote }) => {
             <div>{anecdote.content}</div>
             <div>
                 has {anecdote.votes}
-                <button onClick={handleVote}>vote</button>
+                <button onClick={() => handleVote(anecdote)}>vote</button>
             </div>
         </li>
     )
 }
 
 const AnecdoteList = () => {
-    const anecdotes = useSelector(state => state.anecdotes) ?? []
+    
     const filter = useSelector(state => state.filter) ?? ''
     const dispatch = useDispatch()
+    const queryClient = useQueryClient()
+    
+    const result = useQuery({
+        queryKey: ['anecdotes'],
+        queryFn: getAnecdotes
+    })
+
+    const updateAnecdoteMutation = useMutation({
+        mutationFn: updateAnecdote,
+        onSuccess: (newAnecdote) => {
+            const anecdotes = queryClient.getQueryData(['anecdotes'])
+            const updatedAnecdotes = anecdotes.map(anecdote =>
+                anecdote.id === newAnecdote.id ? newAnecdote : anecdote
+            )
+            queryClient.setQueryData(['anecdotes'], updatedAnecdotes)
+            dispatch(setNotification(`You voted '${newAnecdote.content}'`, 5000))
+        },
+        onError: (error) => {
+            dispatch(setNotification(error.message ?? 'Failed to update anecdote', 5000))
+        }
+    })
+
+    if (result.isLoading) {
+        return <div>Loading...</div>
+    }
+
+    if (result.isError) {
+        return <div>Error: {result.error.message}</div>
+    }
+
+    const anecdotes = result.data
 
     const filteredAnecdotes = anecdotes
         .filter(anecdote => anecdote.content.toLowerCase().includes(filter.toLowerCase()))
         .slice()
         .sort((a, b) => b.votes - a.votes)
+
 
     return (
     <ul>
@@ -32,10 +66,8 @@ const AnecdoteList = () => {
             <Anecdote 
                 key={anecdote.id}
                 anecdote={anecdote}
-                handleVote={async () => {
-                    const updatedAnecdote = await anecdoteService.voteAnecdote(anecdote)
-                    dispatch(incrementVotes(updatedAnecdote.id))
-                    dispatch(setNotification(`Voted for '${anecdote.content}'`, 5000))
+                handleVote={(anecdote) => {
+                    updateAnecdoteMutation.mutate({ ...anecdote, votes: anecdote.votes + 1 })
                 }}
             />
       ))}
