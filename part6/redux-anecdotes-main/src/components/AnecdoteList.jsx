@@ -4,6 +4,8 @@ import { setNotification } from '../reducers/notificationReducer';
 import anecdoteService from '../services/anecdotes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAnecdotes, updateAnecdote } from '../requests';
+import { useContext } from 'react';
+import NotificationContext, { showNotification } from '../NotificationContext';
 
 const Anecdote = ({ anecdote, handleVote }) => {
 
@@ -21,7 +23,7 @@ const Anecdote = ({ anecdote, handleVote }) => {
 const AnecdoteList = () => {
     
     const filter = useSelector(state => state.filter) ?? ''
-    const dispatch = useDispatch()
+    const { notificationDispatch } = useContext(NotificationContext)
     const queryClient = useQueryClient()
     
     const result = useQuery({
@@ -37,10 +39,10 @@ const AnecdoteList = () => {
                 anecdote.id === newAnecdote.id ? newAnecdote : anecdote
             )
             queryClient.setQueryData(['anecdotes'], updatedAnecdotes)
-            dispatch(setNotification(`You voted '${newAnecdote.content}'`, 5000))
+            showNotification(notificationDispatch, `You voted '${newAnecdote.content}'`, 5000)
         },
         onError: (error) => {
-            dispatch(setNotification(error.message ?? 'Failed to update anecdote', 5000))
+            showNotification(notificationDispatch, error.message ?? 'Failed to update anecdote', 5000)
         }
     })
 
@@ -58,7 +60,6 @@ const AnecdoteList = () => {
         .filter(anecdote => anecdote.content.toLowerCase().includes(filter.toLowerCase()))
         .slice()
         .sort((a, b) => b.votes - a.votes)
-
 
     return (
     <ul>

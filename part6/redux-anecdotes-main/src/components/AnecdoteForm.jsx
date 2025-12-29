@@ -2,19 +2,21 @@ import { useDispatch } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createAnecdote } from '../requests';
+import { useContext } from 'react';
+import NotificationContext, { showNotification } from '../NotificationContext';
 
 const AnecdoteForm = () => {
-    const dispatch = useDispatch()
+    const { notificationDispatch } = useContext(NotificationContext)
     const queryClient = useQueryClient()
 
     const newAnecdoteMutation = useMutation({
         mutationFn: createAnecdote,
         onSuccess: (newAnecdote) => {
-            const anecdotes = queryClient.getQueryData(['anecdotes'])
-            queryClient.setQueryData(['anecdotes'], anecdotes.concat(newAnecdote))
+            queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
+            showNotification(notificationDispatch, `Anecdote '${newAnecdote.content}' created`, 5000)
         },
         onError: (error) => {
-            dispatch(setNotification(error.message ?? 'Failed to create anecdote', 5000))
+            showNotification(notificationDispatch, error.message ?? 'Failed to create anecdote', 5000)
         }
     })
 
@@ -23,7 +25,6 @@ const AnecdoteForm = () => {
         const content = event.target.anecdote.value
         event.target.anecdote.value = ''
         newAnecdoteMutation.mutate({ content, votes: 0 })
-        dispatch(setNotification(`Anecdote '${content}' created`, 5000))
     }
 
     return (
