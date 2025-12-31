@@ -1,39 +1,65 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 
-const Login = ({ doLogin }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+const NewBlog = ({ doCreate }) => {
+  const [title, setTitle] = useState('')
+  const [url, setUrl] = useState('')
+  const [author, setAuthor] = useState('')
 
-  const handleLogin = (event) => {
+  const handleTitleChange = (event) => {
+    setTitle(event.target.value)
+  }
+
+  const handleUrlChange = (event) => {
+    setUrl(event.target.value)
+  }
+
+  const handleAuthorChange = (event) => {
+    setAuthor(event.target.value)
+  }
+
+  const handleSubmit = (event) => {
     event.preventDefault()
-    doLogin({ username, password })
-    setUsername('')
-    setPassword('')
+    doCreate({ title, url, author })
+    setAuthor('')
+    setTitle('')
+    setUrl('')
   }
 
   return (
-    <form onSubmit={handleLogin}>
-      <label>
-        Username:
-        <input
-          type="text"
-          data-testid="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </label>
-      <label>
-        Password:
-        <input
-          type="password"
-          value={password}
-          data-testid="password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </label>
-      <input type="submit" value="Login" />
-    </form>
+    <div>
+      <h2>Create a New Blog</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Title:</label>
+          <input
+            type="text"
+            data-testid="title"
+            value={title}
+            onChange={handleTitleChange}
+          />
+        </div>
+        <div>
+          <label>URL:</label>
+          <input
+            type="text"
+            data-testid="url"
+            value={url}
+            onChange={handleUrlChange}
+          />
+        </div>
+        <div>
+          <label>Author:</label>
+          <input
+            type="text"
+            data-testid="author"
+            value={author}
+            onChange={handleAuthorChange}
+          />
+        </div>
+        <button type="submit">Create</button>
+      </form>
+    </div>
   )
 }
 
-export default Login
+export default NewBlog

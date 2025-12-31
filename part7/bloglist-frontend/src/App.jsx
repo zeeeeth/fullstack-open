@@ -47,17 +47,23 @@ const App = () => {
 
   const handleCreate = async (blog) => {
     const newBlog = await blogService.create(blog)
-    setBlogs(blogs.concat(newBlog))
+    const newBlogWithUser = {
+      ...newBlog,
+      user: { name: user.name, username: user.username, id: newBlog.user },
+    }
+    setBlogs(blogs.concat(newBlogWithUser))
     notify(`Blog created: ${newBlog.title}, ${newBlog.author}`)
     blogFormRef.current.toggleVisibility()
   }
 
   const handleVote = async (blog) => {
     console.log('updating', blog)
-    const updatedBlog = await blogService.update(blog.id, {
+    const updated = await blogService.update(blog.id, {
       ...blog,
+      user: blog.user ? blog.user.id : null,
       likes: blog.likes + 1,
     })
+    const updatedBlog = { ...updated, user: blog.user }
 
     notify(`You liked ${updatedBlog.title} by ${updatedBlog.author}`)
     setBlogs(blogs.map((b) => (b.id === blog.id ? updatedBlog : b)))
