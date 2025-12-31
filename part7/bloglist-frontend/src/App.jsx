@@ -1,5 +1,12 @@
 import { useState, useEffect, createRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { notify } from './reducers/notificationReducer'
+import {
+  setBlogs,
+  appendBlog,
+  likeBlog,
+  deleteBlog,
+} from './reducers/blogReducer'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import storage from './services/storage'
@@ -11,26 +18,18 @@ import Togglable from './components/Togglable'
 
 const App = () => {
   const dispatch = useDispatch()
-  const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
+  const notification = useSelector((state) => state.notification)
+  const blogs = useSelector((state) => state.blogs)
 
   // Refactor application to use Redux for notification state
-  const notification = useSelector((state) => state.notification)
-  const setNotification = (notification) => {
-    if (notification) {
-      dispatch({
-        type: 'SET_NOTIFICATION',
-        payload: notification,
-      })
-    }
-  }
-  const clearNotification = () => {
-    dispatch({ type: 'CLEAR_NOTIFICATION' })
+  const showNotification = (message, type = 'success') => {
+    dispatch(notify(message, type, 5000))
   }
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs))
-  }, [])
+    blogService.getAll().then((blogs) => dispatch(setBlogs(blogs)))
+  }, [dispatch])
 
   useEffect(() => {
     const user = storage.loadUser()
@@ -41,21 +40,14 @@ const App = () => {
 
   const blogFormRef = createRef()
 
-  const notify = (message, type = 'success') => {
-    setNotification({ message, type })
-    setTimeout(() => {
-      clearNotification()
-    }, 5000)
-  }
-
   const handleLogin = async (credentials) => {
     try {
       const user = await loginService.login(credentials)
       setUser(user)
       storage.saveUser(user)
-      notify(`Welcome back, ${user.name}`)
+      showNotification(`Welcome back, ${user.name}!`)
     } catch (error) {
-      notify('Wrong credentials', 'error')
+      showNotification('Wrong credentials', 'error')
     }
   }
 
@@ -65,8 +57,8 @@ const App = () => {
       ...newBlog,
       user: { name: user.name, username: user.username, id: newBlog.user },
     }
-    setBlogs(blogs.concat(newBlogWithUser))
-    notify(`Blog created: ${newBlog.title}, ${newBlog.author}`)
+    dispatch(appendBlog(newBlogWithUser))
+    showNotification(`Blog created: ${newBlog.title}, ${newBlog.author}`)
     blogFormRef.current.toggleVisibility()
   }
 
@@ -77,23 +69,21 @@ const App = () => {
       user: blog.user ? blog.user.id : null,
       likes: blog.likes + 1,
     })
-    const updatedBlog = { ...updated, user: blog.user }
-
-    notify(`You liked ${updatedBlog.title} by ${updatedBlog.author}`)
-    setBlogs(blogs.map((b) => (b.id === blog.id ? updatedBlog : b)))
+    showNotification(`You liked ${blog.title} by ${blog.author}`)
+    dispatch(likeBlog(blog.id))
   }
 
   const handleLogout = () => {
     setUser(null)
     storage.removeUser()
-    notify(`Bye, ${user.name}!`)
+    showNotification(`Bye, ${user.name}!`)
   }
 
   const handleDelete = async (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await blogService.remove(blog.id)
-      setBlogs(blogs.filter((b) => b.id !== blog.id))
-      notify(`Blog ${blog.title}, by ${blog.author} removed`)
+      dispatch(deleteBlog(blog.id))
+      showNotification(`Blog ${blog.title}, by ${blog.author} removed`)
     }
   }
 
@@ -120,14 +110,17 @@ const App = () => {
       <Togglable buttonLabel="create new blog" ref={blogFormRef}>
         <NewBlog doCreate={handleCreate} />
       </Togglable>
-      {blogs.sort(byLikes).map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          handleVote={handleVote}
-          handleDelete={handleDelete}
-        />
-      ))}
+      {blogs
+        .slice()
+        .sort(byLikes)
+        .map((blog) => (
+          <Blog
+            key={blog.id}
+            blog={blog}
+            handleVote={handleVote}
+            handleDelete={handleDelete}
+          />
+        ))}
     </div>
   )
 }
