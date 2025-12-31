@@ -1,5 +1,5 @@
 import { useState, useEffect, createRef } from 'react'
-
+import { useSelector, useDispatch } from 'react-redux'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import storage from './services/storage'
@@ -10,9 +10,23 @@ import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 
 const App = () => {
+  const dispatch = useDispatch()
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState(null)
+
+  // Refactor application to use Redux for notification state
+  const notification = useSelector((state) => state.notification)
+  const setNotification = (notification) => {
+    if (notification) {
+      dispatch({
+        type: 'SET_NOTIFICATION',
+        payload: notification,
+      })
+    }
+  }
+  const clearNotification = () => {
+    dispatch({ type: 'CLEAR_NOTIFICATION' })
+  }
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
@@ -30,7 +44,7 @@ const App = () => {
   const notify = (message, type = 'success') => {
     setNotification({ message, type })
     setTimeout(() => {
-      setNotification(null)
+      clearNotification()
     }, 5000)
   }
 
