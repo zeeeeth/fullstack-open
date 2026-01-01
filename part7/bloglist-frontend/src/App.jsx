@@ -2,12 +2,11 @@ import { useState, useEffect, createRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { notify } from './reducers/notificationReducer'
 import {
-  setBlogs,
-  appendBlog,
-  likeBlog,
-  deleteBlog,
+  initializeBlogs,
+  createBlog,
+  likeOneBlog,
+  removeBlog,
 } from './reducers/blogReducer'
-import blogService from './services/blogs'
 import loginService from './services/login'
 import storage from './services/storage'
 import Login from './components/Login'
@@ -28,7 +27,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => dispatch(setBlogs(blogs)))
+    dispatch(initializeBlogs())
   }, [dispatch])
 
   useEffect(() => {
@@ -52,39 +51,27 @@ const App = () => {
   }
 
   const handleCreate = async (blog) => {
-    const newBlog = await blogService.create(blog)
-    const newBlogWithUser = {
-      ...newBlog,
-      user: { name: user.name, username: user.username, id: newBlog.user },
-    }
-    dispatch(appendBlog(newBlogWithUser))
-    showNotification(`Blog created: ${newBlog.title}, ${newBlog.author}`)
+    const created = await dispatch(createBlog(blog, user))
+    showNotification(`Blog created: ${created.title}, ${created.author}`)
     blogFormRef.current.toggleVisibility()
   }
 
   const handleVote = async (blog) => {
-    console.log('updating', blog)
-    const updated = await blogService.update(blog.id, {
-      ...blog,
-      user: blog.user ? blog.user.id : null,
-      likes: blog.likes + 1,
-    })
-    showNotification(`You liked ${blog.title} by ${blog.author}`)
-    dispatch(likeBlog(blog.id))
+    const updated = await dispatch(likeOneBlog(blog))
+    showNotification(`You liked ${updated.title} by ${updated.author}`)
+  }
+
+  const handleDelete = async (blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      await dispatch(removeBlog(blog.id))
+      showNotification(`Blog ${blog.title}, by ${blog.author} removed`)
+    }
   }
 
   const handleLogout = () => {
     setUser(null)
     storage.removeUser()
     showNotification(`Bye, ${user.name}!`)
-  }
-
-  const handleDelete = async (blog) => {
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      await blogService.remove(blog.id)
-      dispatch(deleteBlog(blog.id))
-      showNotification(`Blog ${blog.title}, by ${blog.author} removed`)
-    }
   }
 
   if (!user) {
