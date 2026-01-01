@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { loginUser } from '../reducers/userReducer'
 import { useDispatch } from 'react-redux'
+import { useNotification } from '../contexts/NotificationContext'
 
-const Login = ({ showNotification }) => {
+const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const dispatch = useDispatch()
+  const { showNotification } = useNotification()
 
   const doLogin = async (credentials) => {
     try {

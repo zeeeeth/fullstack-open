@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { createBlog } from '../reducers/blogReducer'
 import { useDispatch } from 'react-redux'
+import { useNotification } from '../contexts/NotificationContext'
 
-const NewBlog = ({ user, showNotification }) => {
+const NewBlog = ({ user }) => {
   const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
@@ -32,6 +33,8 @@ const NewBlog = ({ user, showNotification }) => {
     setTitle('')
     setUrl('')
   }
+
+  const { showNotification } = useNotification()
 
   return (
     <div>

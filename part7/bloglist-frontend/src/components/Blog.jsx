@@ -3,8 +3,9 @@ import PropTypes from 'prop-types'
 import storage from '../services/storage'
 import { likeOneBlog, removeBlog } from '../reducers/blogReducer'
 import { useDispatch } from 'react-redux'
+import { useNotification } from '../contexts/NotificationContext'
 
-const Blog = ({ blog, showNotification }) => {
+const Blog = ({ blog }) => {
   const [visible, setVisible] = useState(false)
 
   const nameOfUser = blog.user ? blog.user.name : 'anonymous'
@@ -17,6 +18,8 @@ const Blog = ({ blog, showNotification }) => {
     borderWidth: 1,
     marginBottom: 5,
   }
+
+  const { showNotification } = useNotification()
 
   const canRemove = blog.user ? blog.user.username === storage.me() : true
 

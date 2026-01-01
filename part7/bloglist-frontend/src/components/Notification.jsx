@@ -1,9 +1,14 @@
-const Notification = ({ notification }) => {
+import { useNotification } from '../contexts/NotificationContext'
+
+const Notification = () => {
+  const { notification } = useNotification()
+  if (!notification) return null
+  const { message, type } = notification
+  if (!message || message.trim() === '') return null
+
   if (!notification) {
     return null
   }
-
-  const { message, type } = notification
 
   const style = {
     backgroundColor: 'lightgrey',
