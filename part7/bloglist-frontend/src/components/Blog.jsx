@@ -2,12 +2,14 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 import storage from '../services/storage'
 import { likeOneBlog, removeBlog } from '../reducers/blogReducer'
-import { notify } from '../reducers/notificationReducer'
+import { useDispatch } from 'react-redux'
 
-const Blog = ({ blog, dispatch }) => {
+const Blog = ({ blog, showNotification }) => {
   const [visible, setVisible] = useState(false)
 
   const nameOfUser = blog.user ? blog.user.name : 'anonymous'
+
+  const dispatch = useDispatch()
 
   const style = {
     border: 'solid',
@@ -19,10 +21,6 @@ const Blog = ({ blog, dispatch }) => {
   const canRemove = blog.user ? blog.user.username === storage.me() : true
 
   console.log(blog.user, storage.me(), canRemove)
-
-  const showNotification = (message, type = 'success') => {
-    dispatch(notify(message, type, 5000))
-  }
 
   const handleVote = async (blog) => {
     const updated = await dispatch(likeOneBlog(blog))

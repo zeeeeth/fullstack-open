@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { notify } from '../reducers/notificationReducer'
 import { createBlog } from '../reducers/blogReducer'
+import { useDispatch } from 'react-redux'
 
-const NewBlog = ({ dispatch, user }) => {
+const NewBlog = ({ user, showNotification }) => {
+  const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
   const [author, setAuthor] = useState('')
@@ -17,10 +18,6 @@ const NewBlog = ({ dispatch, user }) => {
 
   const handleAuthorChange = (event) => {
     setAuthor(event.target.value)
-  }
-
-  const showNotification = (message, type = 'success') => {
-    dispatch(notify(message, type, 5000))
   }
 
   const handleCreate = async (blog) => {
