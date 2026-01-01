@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import storage from '../services/storage'
+import { likeOneBlog, removeBlog } from '../reducers/blogReducer'
+import { notify } from '../reducers/notificationReducer'
 
-const Blog = ({ blog, handleVote, handleDelete }) => {
+const Blog = ({ blog, dispatch }) => {
   const [visible, setVisible] = useState(false)
 
   const nameOfUser = blog.user ? blog.user.name : 'anonymous'
@@ -17,6 +19,22 @@ const Blog = ({ blog, handleVote, handleDelete }) => {
   const canRemove = blog.user ? blog.user.username === storage.me() : true
 
   console.log(blog.user, storage.me(), canRemove)
+
+  const showNotification = (message, type = 'success') => {
+    dispatch(notify(message, type, 5000))
+  }
+
+  const handleVote = async (blog) => {
+    const updated = await dispatch(likeOneBlog(blog))
+    showNotification(`You liked ${updated.title} by ${updated.author}`)
+  }
+
+  const handleDelete = async (blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      await dispatch(removeBlog(blog.id))
+      showNotification(`Blog ${blog.title}, by ${blog.author} removed`)
+    }
+  }
 
   return (
     <div style={style} className="blog">
@@ -52,8 +70,6 @@ Blog.propTypes = {
     likes: PropTypes.number.isRequired,
     user: PropTypes.object,
   }).isRequired,
-  handleVote: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
 }
 
 export default Blog

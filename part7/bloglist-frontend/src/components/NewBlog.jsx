@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { notify } from '../reducers/notificationReducer'
+import { createBlog } from '../reducers/blogReducer'
 
-const NewBlog = ({ doCreate }) => {
+const NewBlog = ({ dispatch, user }) => {
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
   const [author, setAuthor] = useState('')
@@ -17,9 +19,18 @@ const NewBlog = ({ doCreate }) => {
     setAuthor(event.target.value)
   }
 
+  const showNotification = (message, type = 'success') => {
+    dispatch(notify(message, type, 5000))
+  }
+
+  const handleCreate = async (blog) => {
+    const created = await dispatch(createBlog(blog, user))
+    showNotification(`Blog created: ${created.title}, ${created.author}`)
+  }
+
   const handleSubmit = (event) => {
     event.preventDefault()
-    doCreate({ title, url, author })
+    handleCreate({ title, url, author })
     setAuthor('')
     setTitle('')
     setUrl('')
