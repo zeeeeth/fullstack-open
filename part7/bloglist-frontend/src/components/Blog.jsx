@@ -27,13 +27,6 @@ const BlogDetails = () => {
   const { showNotification } = useNotification()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const blog = useQueryClient()
-    .getQueryData(['blogs'])
-    .find((b) => b.id === id)
-
-  const canRemove = blog.user ? blog.user.username === storage.me() : true
-
-  console.log(blog.user, storage.me(), canRemove)
 
   const blogLikeMutation = useMutation({
     mutationFn: (blog) =>
@@ -56,11 +49,6 @@ const BlogDetails = () => {
     },
   })
 
-  const handleVote = async (blog) => {
-    await blogLikeMutation.mutateAsync(blog)
-    showNotification(`You liked ${blog.title} by ${blog.author}`)
-  }
-
   const blogDeleteMutation = useMutation({
     mutationFn: (id) => blogService.remove(id),
     onSuccess: () => {
@@ -73,6 +61,23 @@ const BlogDetails = () => {
       showNotification(`Error deleting blog: ${error.message}`, 'error')
     },
   })
+
+  const blog = (queryClient.getQueryData(['blogs']) ?? []).find(
+    (b) => b.id === id,
+  )
+
+  if (!blog) {
+    return <div className="container">Blog not found</div>
+  }
+
+  const canRemove = blog.user ? blog.user.username === storage.me() : false
+
+  console.log(blog.user, storage.me(), canRemove)
+
+  const handleVote = async (blog) => {
+    await blogLikeMutation.mutateAsync(blog)
+    showNotification(`You liked ${blog.title} by ${blog.author}`)
+  }
 
   const handleDelete = async (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
