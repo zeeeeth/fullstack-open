@@ -25,16 +25,8 @@ const NewBlog = ({ user }) => {
   const newBlogMutation = useMutation({
     mutationFn: (newBlog) => blogService.create(newBlog, user),
     onSuccess: (created) => {
-      const normalized = {
-        ...created,
-        user:
-          typeof created.user === 'string'
-            ? { id: created.user, username: null, name: null }
-            : created.user,
-      }
-
       // Update blogs query data in cache
-      queryClient.setQueryData(['blogs'], (old = []) => old.concat(normalized))
+      queryClient.setQueryData(['blogs'], (old = []) => old.concat(created))
       showNotification(`Blog created: ${created.title}, ${created.author}`)
     },
     onError: (error) => {
