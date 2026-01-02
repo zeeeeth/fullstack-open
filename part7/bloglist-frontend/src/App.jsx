@@ -1,6 +1,5 @@
 import { useEffect, createRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { initializeBlogs } from './reducers/blogReducer'
 import { initialiseUser } from './reducers/userReducer'
 import Login from './components/Login'
 import BlogList from './components/BlogList'
@@ -8,19 +7,39 @@ import NewBlog from './components/NewBlog'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import UserInfo from './components/UserInfo'
+import { useQuery } from '@tanstack/react-query'
+import blogService from './services/blogs'
 
 const App = () => {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.user)
-  const blogs = useSelector((state) => state.blogs)
 
-  useEffect(() => {
-    dispatch(initializeBlogs())
-  }, [dispatch])
+  const result = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+    select: (blogs) =>
+      blogs.map((blog) => ({
+        ...blog,
+        user:
+          typeof blog.user === 'string'
+            ? { id: blog.user, username: null, name: null }
+            : blog.user,
+      })),
+  })
 
   useEffect(() => {
     dispatch(initialiseUser())
   }, [dispatch])
+
+  if (result.isLoading) {
+    return <div>Loading blogs...</div>
+  }
+
+  if (result.isError) {
+    return <div>Error loading blogs: {result.error.message}</div>
+  }
+
+  const blogs = result.data
 
   const blogFormRef = createRef()
 

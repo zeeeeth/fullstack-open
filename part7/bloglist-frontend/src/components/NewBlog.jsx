@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { createBlog } from '../reducers/blogReducer'
-import { useDispatch } from 'react-redux'
 import { useNotification } from '../contexts/NotificationContext'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import blogService from '../services/blogs'
 
 const NewBlog = ({ user }) => {
-  const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
   const [author, setAuthor] = useState('')
+  const queryClient = useQueryClient()
+  const { showNotification } = useNotification()
 
   const handleTitleChange = (event) => {
     setTitle(event.target.value)
@@ -21,20 +22,33 @@ const NewBlog = ({ user }) => {
     setAuthor(event.target.value)
   }
 
-  const handleCreate = async (blog) => {
-    const created = await dispatch(createBlog(blog, user))
-    showNotification(`Blog created: ${created.title}, ${created.author}`)
-  }
+  const newBlogMutation = useMutation({
+    mutationFn: (newBlog) => blogService.create(newBlog, user),
+    onSuccess: (created) => {
+      const normalized = {
+        ...created,
+        user:
+          typeof created.user === 'string'
+            ? { id: created.user, username: null, name: null }
+            : created.user,
+      }
+
+      // Update blogs query data in cache
+      queryClient.setQueryData(['blogs'], (old = []) => old.concat(normalized))
+      showNotification(`Blog created: ${created.title}, ${created.author}`)
+    },
+    onError: (error) => {
+      showNotification(`Error creating blog: ${error.message}`, 'error')
+    },
+  })
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    handleCreate({ title, url, author })
+    newBlogMutation.mutate({ title, url, author })
     setAuthor('')
     setTitle('')
     setUrl('')
   }
-
-  const { showNotification } = useNotification()
 
   return (
     <div>
