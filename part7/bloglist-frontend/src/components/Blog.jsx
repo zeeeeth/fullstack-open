@@ -1,15 +1,11 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
 import storage from '../services/storage'
 import { useNotification } from '../contexts/NotificationContext'
 import blogService from '../services/blogs'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 
 const Blog = ({ blog }) => {
-  const [visible, setVisible] = useState(false)
-
-  const nameOfUser = blog.user ? blog.user.name : 'anonymous'
-
   const style = {
     border: 'solid',
     padding: 10,
@@ -17,8 +13,23 @@ const Blog = ({ blog }) => {
     marginBottom: 5,
   }
 
+  return (
+    <div style={style} className="container">
+      <Link to={`/blogs/${blog.id}`}>
+        {blog.title} by {blog.author}
+      </Link>
+    </div>
+  )
+}
+
+const BlogDetails = () => {
+  const { id } = useParams()
   const { showNotification } = useNotification()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const blog = useQueryClient()
+    .getQueryData(['blogs'])
+    .find((b) => b.id === id)
 
   const canRemove = blog.user ? blog.user.username === storage.me() : true
 
@@ -56,6 +67,7 @@ const Blog = ({ blog }) => {
       queryClient.setQueryData(['blogs'], (oldBlogs = []) =>
         oldBlogs.filter((b) => b.id !== blog.id),
       )
+      navigate('/')
     },
     onError: (error) => {
       showNotification(`Error deleting blog: ${error.message}`, 'error')
@@ -70,28 +82,19 @@ const Blog = ({ blog }) => {
   }
 
   return (
-    <div style={style} className="blog">
-      {blog.title} by {blog.author}
-      <button style={{ marginLeft: 3 }} onClick={() => setVisible(!visible)}>
-        {visible ? 'hide' : 'view'}
-      </button>
-      {visible && (
-        <div>
-          <div>
-            <a href={blog.url}>{blog.url}</a>
-          </div>
-          <div>
-            likes {blog.likes}
-            <button style={{ marginLeft: 3 }} onClick={() => handleVote(blog)}>
-              like
-            </button>
-          </div>
-          <div>{nameOfUser}</div>
-          {canRemove && (
-            <button onClick={() => handleDelete(blog)}>remove</button>
-          )}
-        </div>
-      )}
+    <div>
+      <h2>
+        {blog.title}, {blog.author}
+      </h2>
+      <div>{blog.url}</div>
+      <div>
+        likes {blog.likes}
+        <button style={{ marginLeft: 3 }} onClick={() => handleVote(blog)}>
+          like
+        </button>
+      </div>
+      <div>added by {blog.user ? blog.user.name : 'anonymous'}</div>
+      {canRemove && <button onClick={() => handleDelete(blog)}>remove</button>}
     </div>
   )
 }
@@ -105,4 +108,4 @@ Blog.propTypes = {
   }).isRequired,
 }
 
-export default Blog
+export { Blog, BlogDetails }

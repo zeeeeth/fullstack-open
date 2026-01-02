@@ -1,4 +1,4 @@
-import Blog from './Blog'
+import { Blog } from './Blog'
 
 const byLikes = (b1, b2) => b2.likes - b1.likes
 
