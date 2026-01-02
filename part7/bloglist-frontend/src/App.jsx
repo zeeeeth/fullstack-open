@@ -48,33 +48,37 @@ const App = () => {
     return <LoginPage />
   }
 
-  const padding = {
-    padding: 5,
+  const menuStyle = {
+    background: '#9b9696ff',
+    padding: '4px 8px',
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center',
   }
 
   return (
     <Router>
+      {/* Navigation Menu */}
+      <div style={menuStyle}>
+        <Link to="/">blogs</Link>
+        <Link to="/users">users</Link>
+        <UserInfo />
+      </div>
+
+      {/* Main Content */}
       <div>
         <Notification />
         <h2>Blog App</h2>
-        <UserInfo />
-        <Link style={padding} to="/">
-          blogs
-        </Link>
-        <Link style={padding} to="/users">
-          users
-        </Link>
+        <Routes>
+          <Route
+            path="/"
+            element={<Home blogFormRef={blogFormRef} blogs={blogs} />}
+          />
+          <Route path="/users" element={<UserView />} />
+          <Route path="/users/:id" element={<User />} />
+          <Route path="/blogs/:id" element={<BlogDetails />} />
+        </Routes>
       </div>
-
-      <Routes>
-        <Route
-          path="/"
-          element={<Home blogFormRef={blogFormRef} blogs={blogs} />}
-        />
-        <Route path="/users" element={<UserView />} />
-        <Route path="/users/:id" element={<User />} />
-        <Route path="/blogs/:id" element={<BlogDetails />} />
-      </Routes>
     </Router>
   )
 }
