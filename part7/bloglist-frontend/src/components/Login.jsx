@@ -1,17 +1,16 @@
 import { useState } from 'react'
-import { loginUser } from '../reducers/userReducer'
-import { useDispatch } from 'react-redux'
 import { useNotification } from '../contexts/NotificationContext'
+import { useUser } from '../contexts/UserContext'
 
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const dispatch = useDispatch()
   const { showNotification } = useNotification()
+  const { login } = useUser()
 
   const doLogin = async (credentials) => {
     try {
-      const user = await dispatch(loginUser(credentials))
+      const user = await login(credentials)
       showNotification(`Welcome back, ${user.name}!`)
     } catch (error) {
       showNotification('Wrong credentials', 'error')

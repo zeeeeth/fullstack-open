@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { useNotification } from '../contexts/NotificationContext'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import blogService from '../services/blogs'
+import { useUser } from '../contexts/UserContext'
 
-const NewBlog = ({ user }) => {
+const NewBlog = () => {
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
   const [author, setAuthor] = useState('')
   const queryClient = useQueryClient()
   const { showNotification } = useNotification()
+
+  const { user } = useUser()
 
   const handleTitleChange = (event) => {
     setTitle(event.target.value)

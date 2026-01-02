@@ -1,6 +1,4 @@
-import { useEffect, createRef } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { initialiseUser } from './reducers/userReducer'
+import { createRef } from 'react'
 import Login from './components/Login'
 import BlogList from './components/BlogList'
 import NewBlog from './components/NewBlog'
@@ -9,10 +7,10 @@ import Togglable from './components/Togglable'
 import UserInfo from './components/UserInfo'
 import { useQuery } from '@tanstack/react-query'
 import blogService from './services/blogs'
+import { useUser } from './contexts/UserContext'
 
 const App = () => {
-  const dispatch = useDispatch()
-  const user = useSelector((state) => state.user)
+  const { user } = useUser()
 
   const result = useQuery({
     queryKey: ['blogs'],
@@ -27,10 +25,6 @@ const App = () => {
       })),
   })
 
-  useEffect(() => {
-    dispatch(initialiseUser())
-  }, [dispatch])
-
   if (result.isLoading) {
     return <div>Loading blogs...</div>
   }
@@ -40,7 +34,6 @@ const App = () => {
   }
 
   const blogs = result.data
-
   const blogFormRef = createRef()
 
   if (!user) {
@@ -57,9 +50,9 @@ const App = () => {
     <div>
       <h2>blogs</h2>
       <Notification />
-      <UserInfo user={user} />
+      <UserInfo />
       <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <NewBlog user={user} />
+        <NewBlog />
       </Togglable>
       <BlogList blogs={blogs} />
     </div>

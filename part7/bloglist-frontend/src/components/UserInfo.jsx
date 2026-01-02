@@ -1,13 +1,11 @@
-import { useDispatch } from 'react-redux'
-import { logoutUser } from '../reducers/userReducer'
 import { useNotification } from '../contexts/NotificationContext'
+import { useUser } from '../contexts/UserContext'
 
-const UserInfo = ({ user }) => {
-  const dispatch = useDispatch()
-
+const UserInfo = () => {
   const { showNotification } = useNotification()
+  const { user, logout } = useUser()
   const handleLogout = () => {
-    dispatch(logoutUser())
+    logout()
     showNotification(`Bye, ${user.name}!`)
   }
 
