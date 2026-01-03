@@ -147,6 +147,7 @@ describe('posting a blog', () => {
             author: 'me',
             url: 'http://example.com',
             likes: 7,
+            comments: ['Nice post!', 'Thanks for sharing.']
         }
 
         const created = await api
@@ -157,13 +158,86 @@ describe('posting a blog', () => {
             .expect('Content-Type', /application\/json/)
 
         // 1) blog.user is set
-        assert.strictEqual(created.body.user.toString(), user.id.toString())
+        assert.strictEqual(created.body.user.id.toString(), user.id.toString())
 
         // 2) user.blogs contains the blog id
         const usersAtEnd = await helper.usersInDb()
         const updatedUser = usersAtEnd.find(u => u.id === user.id)
 
         assert.ok(updatedUser.blogs.map(b => b.toString()).includes(created.body.id.toString()))
+    })
+})
+
+describe('updating a blog', () => {
+    test('successfully updates the blog\'s information', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogToUpdate = blogsAtStart[0]
+        const updatedData = {
+            title: 'Updated Title',
+            author: 'Updated Author',
+            url: 'http://updatedurl.com',
+            likes: blogToUpdate.likes + 1,
+            comments: blogToUpdate.comments.concat(['New comment!'])
+        }
+        const response = await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(updatedData)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+        const updatedBlog = response.body
+        assert.strictEqual(updatedBlog.title, updatedData.title)
+        assert.strictEqual(updatedBlog.author, updatedData.author)
+        assert.strictEqual(updatedBlog.url, updatedData.url)
+        assert.strictEqual(updatedBlog.likes, updatedData.likes)
+        assert.deepStrictEqual(updatedBlog.comments, updatedData.comments)
+    })
+
+    test('returns 400 when trying to update a non-existing blog', async () => {
+        const validButMissingId = await helper.nonExistingId()
+        const updatedData = {
+            title: 'Updated Title',
+            author: 'Updated Author',
+            url: 'http://updatedurl.com',
+            likes: 10,
+            comments: ['New comment!']
+        }
+        await api
+            .put(`/api/blogs/${validButMissingId}`)
+            .send(updatedData)
+            .expect(400)
+    })
+})
+
+describe('adding comments to a blog', () => {
+    test('successfully adds a comment to the blog', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogIdToCommentOn = blogsAtStart[0].id
+        const newComment = 'This is a test comment.'
+
+        const response = await api
+            .post(`/api/blogs/${blogIdToCommentOn}/comments`)
+            .send({ comment: newComment })
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+        const updatedBlog = response.body
+        assert.ok(updatedBlog.comments.includes(newComment))
+    })
+
+    test('comments array remains unchanged if no comment provided', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogIdToUpdate = blogsAtStart[0].id
+        await api
+            .post(`/api/blogs/${blogIdToUpdate}/comments`)
+            .send({}) // no comments provided
+            .expect(400)
+    })
+
+    test('adding comment to non-existing blog returns 400', async () => {
+        const validButMissingId = await helper.nonExistingId()
+        await api
+            .post(`/api/blogs/${validButMissingId}/comments`)
+            .send({ comment: 'This comment will not be added.' })
+            .expect(400)
     })
 })
 

@@ -57,7 +57,8 @@ const validBlog = {
     title: "yet another test blog",
     author: "me once again",
     url: "urllll",
-    likes: 2
+    likes: 2,
+    comments: ["Great blog!", "Very informative."]
 }
 
 const blogWithoutLikes = {
