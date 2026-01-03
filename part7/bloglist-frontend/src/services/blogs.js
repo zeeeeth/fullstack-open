@@ -7,14 +7,23 @@ const getConfit = () => ({
   headers: { Authorization: `Bearer ${storage.loadUser().token}` },
 })
 
-const getAll = () => {
-  const request = axios.get(baseUrl)
-  return request.then((response) => response.data)
+const getAll = async () => {
+  const request = await axios.get(baseUrl)
+  return request.data
 }
 
-const update = (id, newObject) => {
-  const request = axios.put(`${baseUrl}/${id}`, newObject, getConfit())
-  return request.then((response) => response.data)
+const update = async (id, newObject) => {
+  const request = await axios.put(`${baseUrl}/${id}`, newObject, getConfit())
+  return request.data
+}
+
+const comment = async (id, comment) => {
+  const response = await axios.post(
+    `${baseUrl}/${id}/comments`,
+    { comment },
+    getConfit(),
+  )
+  return response.data
 }
 
 const create = async (newObject) => {
@@ -27,4 +36,4 @@ const remove = async (id) => {
   return response.data
 }
 
-export default { getAll, create, update, remove }
+export default { getAll, create, update, remove, comment }

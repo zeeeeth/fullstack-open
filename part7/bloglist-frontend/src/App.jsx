@@ -8,14 +8,7 @@ import Notification from './components/Notification'
 import { useQuery } from '@tanstack/react-query'
 import blogService from './services/blogs'
 import { useUser } from './contexts/UserContext'
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  useParams,
-} from 'react-router-dom'
-import { use } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 
 const App = () => {
   const { user } = useUser()
