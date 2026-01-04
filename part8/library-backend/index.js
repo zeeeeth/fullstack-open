@@ -152,6 +152,31 @@ const resolvers = {
   },
   Mutation: {
     addBook: (root, args) => {
+      {
+        /* Validate arguments: non-empty title, author, published year, and genres */
+      }
+      const title = (args.title ?? '').trim()
+      const author = (args.author ?? '').trim()
+      const published = args.published
+      const genres = Array.isArray(args.genres)
+        ? args.genres.map((g) => String(g).trim()).filter(Boolean)
+        : []
+
+      if (!title) {
+        throw new Error('Your book has no title?')
+      }
+      if (!author) {
+        throw new Error('Did a ghost write this book? Think seriously.')
+      }
+      if (!Number.isInteger(published) || published <= 0) {
+        throw new Error(
+          'Either a caveman published this book or you made a typo.'
+        )
+      }
+      if (genres.length === 0) {
+        throw new Error("You're so special that no genre can describe this?")
+      }
+
       const newBook = { ...args, id: uuid() }
       books = books.concat(newBook)
       if (!authors.find((a) => a.name === args.author)) {
@@ -162,7 +187,12 @@ const resolvers = {
     },
     editAuthor: (root, args) => {
       const author = authors.find((a) => a.name === args.name)
-      if (!author) return null
+      if (!author) {
+        throw new Error('Author not found')
+      }
+      if (!Number.isInteger(args.setBornTo) || args.setBornTo <= 0) {
+        throw new Error('Year must be a positive integer')
+      }
       const updatedAuthor = { ...author, born: args.setBornTo }
       authors = authors.map((a) =>
         a.name === updatedAuthor.name ? updatedAuthor : a

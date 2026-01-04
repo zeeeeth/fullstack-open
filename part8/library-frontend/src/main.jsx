@@ -14,14 +14,10 @@ const client = new ApolloClient({
 
 const query = gql`
   query {
-    allPersons {
+    allAuthors {
       name
-      phone
-      address {
-        street
-        city
-      }
-      id
+      born
+      bookCount
     }
   }
 `
