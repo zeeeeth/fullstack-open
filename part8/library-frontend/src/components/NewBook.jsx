@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
-import { ALL_AUTHORS, ALL_BOOKS, CREATE_BOOK } from '../queries'
+import {
+  ALL_AUTHORS,
+  ALL_BOOKS,
+  ALL_BOOKS_BY_GENRE,
+  CREATE_BOOK,
+} from '../queries'
 
 const NewBook = (props) => {
   if (!props.show) {
@@ -14,9 +19,58 @@ const NewBook = (props) => {
   const [genres, setGenres] = useState([])
 
   const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    update: (cache, { data }) => {
+      const addedBook = data?.addBook
+      if (!addedBook) return
+
+      // 1. Update ALL_BOOKS cache
+      cache.updateQuery({ query: ALL_BOOKS }, (old) => {
+        if (!old) return old
+        return { allBooks: old.allBooks.concat(addedBook) }
+      })
+
+      // 2. Update ALL_BOOKS_BY_GENRE caches for each genre of the added book
+      addedBook.genres.forEach((g) => {
+        cache.updateQuery(
+          { query: ALL_BOOKS_BY_GENRE, variables: { genre: g } },
+          (old) => {
+            if (!old) return old
+            return { allBooks: old.allBooks.concat(addedBook) }
+          }
+        )
+      })
+
+      // 3. Update ALL_AUTHORS cache
+      cache.updateQuery({ query: ALL_AUTHORS }, (old) => {
+        if (!old) return old
+        const name = addedBook.author.name
+        const exists = old.allAuthors.some((a) => a.name === name)
+
+        if (exists) {
+          return {
+            allAuthors: old.allAuthors.map((a) =>
+              a.name === name ? { ...a, bookCount: a.bookCount + 1 } : a
+            ),
+          }
+        }
+
+        return {
+          allAuthors: old.allAuthors.concat({
+            name: addedBook.author.name,
+            born: null,
+            bookCount: 1,
+            id: addedBook.author.id,
+          }),
+        }
+      })
+    },
     onError: (error) => {
-      props.setError({ message: error.message, type: 'error' })
+      const message =
+        error?.graphQLErrors?.[0]?.message ||
+        error?.networkError?.message ||
+        error?.message ||
+        'Unknown error'
+      props.setError({ message, type: 'error' })
     },
   })
 
@@ -66,7 +120,7 @@ const NewBook = (props) => {
           <input
             type="number"
             value={published}
-            onChange={({ target }) => setPublished(Number(target.value))}
+            onChange={({ target }) => setPublished(target.value)}
           />
         </div>
         <div>

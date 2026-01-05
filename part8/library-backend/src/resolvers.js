@@ -122,7 +122,10 @@ const resolvers = {
         id: user._id,
       }
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+      return {
+        token: { value: jwt.sign(userForToken, process.env.JWT_SECRET) },
+        favoriteGenre: user.favoriteGenre,
+      }
     },
   },
 }

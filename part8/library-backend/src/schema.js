@@ -41,7 +41,12 @@ const typeDefs = /* GraphQL */ `
     ): Book
     editAuthor(name: String!, setBornTo: Int!): Author
     createUser(username: String!, favoriteGenre: String!): User
-    login(username: String!, password: String!): Token
+    login(username: String!, password: String!): LoginResponse
+  }
+
+  type LoginResponse {
+    token: Token!
+    favoriteGenre: String!
   }
 `
 
