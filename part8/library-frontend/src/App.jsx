@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { useApolloClient, useQuery } from '@apollo/client/react'
+import {
+  useApolloClient,
+  useQuery,
+  useSubscription,
+} from '@apollo/client/react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import Recommend from './components/Recommend'
+import { BOOK_ADDED } from './queries'
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -13,6 +18,14 @@ const App = () => {
   const [token, setToken] = useState(null)
   const [favGenre, setFavGenre] = useState(null)
   const client = useApolloClient()
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      window.alert(
+        `New book added: ${data.data.bookAdded.title} by ${data.data.bookAdded.author.name}`
+      )
+    },
+  })
 
   const notify = ({ message, type }) => {
     setError({ message, type })
