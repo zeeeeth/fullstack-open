@@ -6,6 +6,7 @@ import {
   ALL_BOOKS_BY_GENRE,
   CREATE_BOOK,
 } from '../queries'
+import { addBookToCache } from '../utils/apolloCache'
 
 const NewBook = (props) => {
   if (!props.show) {
@@ -22,47 +23,7 @@ const NewBook = (props) => {
     update: (cache, { data }) => {
       const addedBook = data?.addBook
       if (!addedBook) return
-
-      // 1. Update ALL_BOOKS cache
-      cache.updateQuery({ query: ALL_BOOKS }, (old) => {
-        if (!old) return old
-        return { allBooks: old.allBooks.concat(addedBook) }
-      })
-
-      // 2. Update ALL_BOOKS_BY_GENRE caches for each genre of the added book
-      addedBook.genres.forEach((g) => {
-        cache.updateQuery(
-          { query: ALL_BOOKS_BY_GENRE, variables: { genre: g } },
-          (old) => {
-            if (!old) return old
-            return { allBooks: old.allBooks.concat(addedBook) }
-          }
-        )
-      })
-
-      // 3. Update ALL_AUTHORS cache
-      cache.updateQuery({ query: ALL_AUTHORS }, (old) => {
-        if (!old) return old
-        const name = addedBook.author.name
-        const exists = old.allAuthors.some((a) => a.name === name)
-
-        if (exists) {
-          return {
-            allAuthors: old.allAuthors.map((a) =>
-              a.name === name ? { ...a, bookCount: a.bookCount + 1 } : a
-            ),
-          }
-        }
-
-        return {
-          allAuthors: old.allAuthors.concat({
-            name: addedBook.author.name,
-            born: null,
-            bookCount: 1,
-            id: addedBook.author.id,
-          }),
-        }
-      })
+      addBookToCache(cache, addedBook)
     },
     onError: (error) => {
       const message =
