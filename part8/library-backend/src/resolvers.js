@@ -37,15 +37,23 @@ const resolvers = {
       return Book.find(filter).populate('author')
     },
     allAuthors: async () => {
-      return Author.find({})
+      // Fetch all authors
+      const authors = await Author.find({})
+      // Aggregate book counts for each author
+      const counts = await Book.aggregate([
+        { $group: { _id: '$author', count: { $sum: 1 } } },
+      ])
+      // Convert array to a map for easier lookup
+      const countMap = new Map(counts.map((c) => [String(c._id), c.count]))
+      return authors.map((author) => ({
+        id: author._id.toString(),
+        name: author.name,
+        born: author.born,
+        bookCount: countMap.get(String(author._id)) || 0,
+      }))
     },
     me: (root, args, context) => {
       return context.currentUser
-    },
-  },
-  Author: {
-    bookCount: async (root) => {
-      return Book.countDocuments({ author: root._id })
     },
   },
   Mutation: {

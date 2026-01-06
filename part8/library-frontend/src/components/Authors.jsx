@@ -4,11 +4,7 @@ import { useMutation } from '@apollo/client/react'
 import { ALL_AUTHORS, SET_BIRTHYEAR } from '../queries'
 
 const Authors = ({ show, setError, token }) => {
-  if (!show) {
-    return null
-  }
-
-  const authors = useQuery(ALL_AUTHORS)
+  const authors = useQuery(ALL_AUTHORS, { skip: !show })
   const [year, setYear] = useState('')
   const [selectedName, setSelectedName] = useState('')
 
@@ -36,9 +32,10 @@ const Authors = ({ show, setError, token }) => {
     setYear('')
   }
 
-  if (authors.loading) {
-    return <div>loading...</div>
-  }
+  if (!show) return null
+  if (authors.loading) return <div>loading...</div>
+  if (authors.error) return <div>Error: {authors.error.message}</div>
+  if (!authors.data) return null
 
   return (
     <div>
