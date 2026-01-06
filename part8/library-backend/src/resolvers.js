@@ -3,6 +3,7 @@ const Book = require('./models/book')
 const Author = require('./models/author')
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
+const { PubSub } = require('graphql-subscriptions')
 
 const mongooseErrorToGraphQLError = (error, operation) => {
   if (error?.name === 'ValidationError') {
@@ -16,6 +17,8 @@ const mongooseErrorToGraphQLError = (error, operation) => {
     })
   }
 }
+
+const pubsub = new PubSub()
 
 const resolvers = {
   Query: {
@@ -71,7 +74,9 @@ const resolvers = {
         })
 
         const saved = await book.save()
-        return Book.findById(saved._id).populate('author')
+        const bookWithAuthor = await Book.findById(saved._id).populate('author')
+        pubsub.publish('BOOK_ADDED', { bookAdded: bookWithAuthor })
+        return bookWithAuthor
       } catch (error) {
         throw mongooseErrorToGraphQLError(error, 'addBook')
       }
@@ -126,6 +131,11 @@ const resolvers = {
         token: { value: jwt.sign(userForToken, process.env.JWT_SECRET) },
         favoriteGenre: user.favoriteGenre,
       }
+    },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator('BOOK_ADDED'),
     },
   },
 }

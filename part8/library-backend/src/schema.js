@@ -48,6 +48,10 @@ const typeDefs = /* GraphQL */ `
     token: Token!
     favoriteGenre: String!
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 module.exports = typeDefs
