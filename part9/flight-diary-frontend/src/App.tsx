@@ -10,8 +10,8 @@ const App = () => {
     []
   );
   const [date, setDate] = useState('');
-  const [weather, setWeather] = useState('');
-  const [visibility, setVisibility] = useState('');
+  const [weather, setWeather] = useState<Weather | ''>('');
+  const [visibility, setVisibility] = useState<Visibility | ''>('');
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
 

@@ -1,11 +1,13 @@
+import { Weather, Visibility } from '../types';
+
 interface DiaryFormProps {
   setDate: React.Dispatch<React.SetStateAction<string>>;
-  setWeather: React.Dispatch<React.SetStateAction<string>>;
-  setVisibility: React.Dispatch<React.SetStateAction<string>>;
+  setWeather: React.Dispatch<React.SetStateAction<Weather | ''>>;
+  setVisibility: React.Dispatch<React.SetStateAction<Visibility | ''>>;
   setComment: React.Dispatch<React.SetStateAction<string>>;
   date: string;
-  weather: string;
-  visibility: string;
+  weather: Weather | '';
+  visibility: Visibility | '';
   comment: string;
   submit: (event: React.SyntheticEvent) => Promise<void>;
 }
@@ -29,26 +31,40 @@ const DiaryForm = ({
           <div>
             date{' '}
             <input
-              type="text"
+              type="date"
               value={date}
               onChange={({ target }) => setDate(target.value)}
             />
           </div>
           <div>
             weather{' '}
-            <input
-              type="text"
-              value={weather}
-              onChange={({ target }) => setWeather(target.value)}
-            />
+            {Object.values(Weather).map((option) => (
+              <label key={option}>
+                <input
+                  type="radio"
+                  value={option}
+                  checked={weather === option}
+                  onChange={({ target }) => setWeather(target.value as Weather)}
+                />
+                {option}
+              </label>
+            ))}
           </div>
           <div>
             visibility{' '}
-            <input
-              type="text"
-              value={visibility}
-              onChange={({ target }) => setVisibility(target.value)}
-            />
+            {Object.values(Visibility).map((option) => (
+              <label key={option}>
+                <input
+                  type="radio"
+                  value={option}
+                  checked={visibility === option}
+                  onChange={({ target }) =>
+                    setVisibility(target.value as Visibility)
+                  }
+                />
+                {option}
+              </label>
+            ))}
           </div>
           <div>
             comment{' '}
