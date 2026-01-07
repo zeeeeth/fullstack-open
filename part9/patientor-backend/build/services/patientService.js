@@ -17,13 +17,17 @@ const getNonSensitivePatients = () => {
         occupation,
     }));
 };
+const getPatientById = (id) => {
+    return patients_1.default.find((patient) => patient.id === id);
+};
 const addPatient = (entry) => {
-    const newPatient = Object.assign({ id: (0, uuid_1.v4)() }, entry);
+    const newPatient = Object.assign(Object.assign({ id: (0, uuid_1.v4)() }, entry), { entries: [] });
     patients_1.default.push(newPatient);
     return newPatient;
 };
 exports.default = {
     getPatients,
     getNonSensitivePatients,
+    getPatientById,
     addPatient,
 };

@@ -25,7 +25,7 @@ const errorMiddleWare = (
   }
 };
 
-app.get('/ping', (_req, res) => {
+app.get('/api/ping', (_req, res) => {
   console.log('someone pinged here');
   res.send('pong');
 });
@@ -36,6 +36,10 @@ app.get('/api/diagnoses', (_req, res) => {
 
 app.get('/api/patients', (_req, res) => {
   res.send(patientService.getNonSensitivePatients());
+});
+
+app.get('/api/patients/:id', (req, res) => {
+  res.send(patientService.getPatientById(req.params.id));
 });
 
 const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
