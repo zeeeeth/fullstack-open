@@ -8,34 +8,47 @@ const App = () => {
   const [weather, setWeather] = useState('');
   const [visibility, setVisibility] = useState('');
   const [comment, setComment] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchDiaries = async () => {
-      setDiaryEntries(await getAllDiaries() as NonSensitiveDiaryEntry[]);
+      try {
+        const data = await getAllDiaries();
+        setDiaryEntries(data);
+      } catch (error) {
+        setError((error as Error).message);
+        setTimeout(() => setError(''), 5000);
+      }
     };
     fetchDiaries();
   }, []);
 
   const submit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-    const diaryToAdd = {
-      date,
-      weather: weather as Weather,
-      visibility: visibility as Visibility,
-      comment
+    try {
+      const diaryToAdd = {
+        date,
+        weather: weather as Weather,
+        visibility: visibility as Visibility,
+        comment
+      }
+      const addedDiary = await createDiary(diaryToAdd)
+      const addedDiaryEntry = addedDiary as NonSensitiveDiaryEntry;
+      setDiaryEntries(diaryEntries.concat(addedDiaryEntry));
+      setDate('');
+      setWeather('');
+      setVisibility('');
+      setComment('');
+    } catch (error) {
+      setError((error as Error).message);
+      setTimeout(() => setError(''), 5000);
     }
-    const addedDiary = await createDiary(diaryToAdd)
-    const addedDiaryEntry = addedDiary as NonSensitiveDiaryEntry;
-    setDiaryEntries(diaryEntries.concat(addedDiaryEntry));
-    setDate('');
-    setWeather('');
-    setVisibility('');
-    setComment('');
   }
 
   return (
     <div>
       <h1>Flight Diary</h1>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <h2>Add new entry</h2>
       <div>
         <form onSubmit={submit}>
