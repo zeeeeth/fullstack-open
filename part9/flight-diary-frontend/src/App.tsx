@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import type { NonSensitiveDiaryEntry, Weather, Visibility } from './types';
 import { getAllDiaries, createDiary } from './services/diary';
+import EntryList from './components/EntryList';
+import DiaryForm from './components/DiaryForm';
+import Notification from './components/Notification';
 
 const App = () => {
-  const [diaryEntries, setDiaryEntries] = useState<NonSensitiveDiaryEntry[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<NonSensitiveDiaryEntry[]>(
+    []
+  );
   const [date, setDate] = useState('');
   const [weather, setWeather] = useState('');
   const [visibility, setVisibility] = useState('');
@@ -30,9 +35,9 @@ const App = () => {
         date,
         weather: weather as Weather,
         visibility: visibility as Visibility,
-        comment
-      }
-      const addedDiary = await createDiary(diaryToAdd)
+        comment,
+      };
+      const addedDiary = await createDiary(diaryToAdd);
       const addedDiaryEntry = addedDiary as NonSensitiveDiaryEntry;
       setDiaryEntries(diaryEntries.concat(addedDiaryEntry));
       setDate('');
@@ -43,47 +48,26 @@ const App = () => {
       setError((error as Error).message);
       setTimeout(() => setError(''), 5000);
     }
-  }
+  };
 
   return (
     <div>
       <h1>Flight Diary</h1>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      <h2>Add new entry</h2>
-      <div>
-        <form onSubmit={submit}>
-          <div>
-            date{" "}
-            <input type="text" value={date} onChange={({ target }) => setDate(target.value)} />
-          </div>
-          <div>
-            weather{" "}
-            <input type="text" value={weather} onChange={({ target }) => setWeather(target.value)} />
-          </div>
-          <div>
-            visibility{" "}
-            <input type="text" value={visibility} onChange={({ target }) => setVisibility(target.value)} />
-          </div>
-          <div>
-            comment{" "}
-            <input type="text" value={comment} onChange={({ target }) => setComment(target.value)} />
-          </div>
-          <button type="submit">add</button>
-        </form>
-      </div>
-
-      <h2>Diary Entries</h2>
-      {diaryEntries.map(entry => {
-        return (
-          <div key={entry.id}>
-            <h2>{entry.date}</h2>
-            <p>Weather: {entry.weather}</p>
-            <p>Visibility: {entry.visibility}</p>
-          </div>
-        )
-      })}
+      <Notification message={error} />
+      <DiaryForm
+        setDate={setDate}
+        setWeather={setWeather}
+        setVisibility={setVisibility}
+        setComment={setComment}
+        submit={submit}
+        date={date}
+        weather={weather}
+        visibility={visibility}
+        comment={comment}
+      />
+      {diaryEntries && <EntryList diaryEntries={diaryEntries} />}
     </div>
-  )
-}
+  );
+};
 
 export default App;
