@@ -25,9 +25,19 @@ const addPatient = (entry) => {
     patients_1.default.push(newPatient);
     return newPatient;
 };
+const addEntry = (patientId, entry) => {
+    const patient = patients_1.default.find((p) => p.id === patientId);
+    if (!patient) {
+        throw new Error('Patient not found');
+    }
+    const newEntry = Object.assign({ id: (0, uuid_1.v4)() }, entry);
+    patient.entries.push(newEntry);
+    return newEntry;
+};
 exports.default = {
     getPatients,
     getNonSensitivePatients,
     getPatientById,
     addPatient,
+    addEntry,
 };

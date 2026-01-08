@@ -9,6 +9,7 @@ const diagnosisService_1 = __importDefault(require("./services/diagnosisService"
 const patientService_1 = __importDefault(require("./services/patientService"));
 const zod_1 = require("zod");
 const toNewPatient_1 = require("./utils/toNewPatient");
+const toNewEntry_1 = require("./utils/toNewEntry");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
@@ -46,6 +47,31 @@ const newPatientParser = (req, _res, next) => {
 app.post('/api/patients', newPatientParser, (req, res) => {
     const addedPatient = patientService_1.default.addPatient(req.body);
     res.json(addedPatient);
+});
+const parseDiagnosisCodes = (object) => {
+    if (!object || typeof object !== 'object' || !('diagnosisCodes' in object)) {
+        return [];
+    }
+    return object.diagnosisCodes;
+};
+const newEntryParser = (req, _res, next) => {
+    if (!req.body || typeof req.body !== 'object' || !('type' in req.body)) {
+        next(new Error('Entry type is missing'));
+        return;
+    }
+    try {
+        const diagnosisCodes = parseDiagnosisCodes(req.body);
+        const bodyWithDiagnoses = Object.assign(Object.assign({}, req.body), { diagnosisCodes });
+        toNewEntry_1.NewEntrySchema.parse(bodyWithDiagnoses);
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+};
+app.post('/api/patients/:id/entries', newEntryParser, (req, res) => {
+    const addedEntry = patientService_1.default.addEntry(req.params.id, req.body);
+    res.json(addedEntry);
 });
 app.use(errorMiddleWare);
 app.listen(PORT, () => {

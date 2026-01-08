@@ -1,0 +1,18 @@
+POST http://localhost:3001/api/patients/d2773598-f723-11e9-8f0b-362b9e155667/entries
+Content-Type: application/json
+
+{
+    "type": "OccupationalHealthcare",
+    "description": "Consultation for work-related stress",
+    "date": "2022-11-15",
+    "specialist": "Dr. Johnson",
+    "employerName": "Tech Solutions Ltd.",
+    "sickLeave": {
+        "startDate": "2022-11-16",
+        "endDate": "2022-11-30"
+    },
+    "diagnosisCodes": [
+        "F43.2",
+        "Z56.6"
+    ]
+}

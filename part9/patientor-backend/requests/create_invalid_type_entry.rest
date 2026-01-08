@@ -1,0 +1,16 @@
+POST http://localhost:3001/api/patients/d27736ec-f723-11e9-8f0b-362b9e155667/entries
+Content-Type: application/json
+
+{
+    "type": "InvalidType",
+    "description": "Yearly control visit. Due to high cholesterol levels recommended to eat more vegetables.",
+    "date": "2022-10-05",
+    "specialist": "Dr. Smith",
+    "diagnosisCodes": [
+        "S62.5"
+    ],
+    "discharge": {
+        "date": "2022-10-05",
+        "criteria": "Patient feels well and is able to eat normal food."
+    }
+}

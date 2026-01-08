@@ -4,7 +4,8 @@ import diagnosisService from './services/diagnosisService';
 import patientService from './services/patientService';
 import { z } from 'zod';
 import { NewPatientSchema } from './utils/toNewPatient';
-import { Patient, NewPatient } from './types';
+import { Patient, NewPatient, Entry, NewEntry, Diagnosis } from './types';
+import { NewEntrySchema } from './utils/toNewEntry';
 
 const app = express();
 app.use(express.json());
@@ -38,7 +39,7 @@ app.get('/api/patients', (_req, res) => {
   res.send(patientService.getNonSensitivePatients());
 });
 
-app.get('/api/patients/:id', (req, res) => {
+app.get('/api/patients/:id', (req: Request<{ id: string }>, res) => {
   res.send(patientService.getPatientById(req.params.id));
 });
 
@@ -57,6 +58,42 @@ app.post(
   (req: Request<unknown, unknown, NewPatient>, res: Response<Patient>) => {
     const addedPatient = patientService.addPatient(req.body);
     res.json(addedPatient);
+  }
+);
+
+const parseDiagnosisCodes = (object: unknown): Array<Diagnosis['code']> => {
+  if (!object || typeof object !== 'object' || !('diagnosisCodes' in object)) {
+    return [] as Array<Diagnosis['code']>;
+  }
+
+  return object.diagnosisCodes as Array<Diagnosis['code']>;
+};
+
+const newEntryParser = (
+  req: Request<{ id: string }, unknown, unknown>,
+  _res: Response,
+  next: NextFunction
+) => {
+  if (!req.body || typeof req.body !== 'object' || !('type' in req.body)) {
+    next(new Error('Entry type is missing'));
+    return;
+  }
+  try {
+    const diagnosisCodes = parseDiagnosisCodes(req.body);
+    const bodyWithDiagnoses = { ...req.body, diagnosisCodes };
+    NewEntrySchema.parse(bodyWithDiagnoses);
+    next();
+  } catch (error: unknown) {
+    next(error);
+  }
+};
+
+app.post(
+  '/api/patients/:id/entries',
+  newEntryParser,
+  (req: Request<{ id: string }, unknown, NewEntry>, res: Response<Entry>) => {
+    const addedEntry = patientService.addEntry(req.params.id, req.body);
+    res.json(addedEntry);
   }
 );
 
