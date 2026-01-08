@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const patients_1 = __importDefault(require("../data/patients"));
+const types_1 = require("../types");
 const uuid_1 = require("uuid");
 const getPatients = () => {
     return patients_1.default;
@@ -29,6 +30,13 @@ const addEntry = (patientId, entry) => {
     const patient = patients_1.default.find((p) => p.id === patientId);
     if (!patient) {
         throw new Error('Patient not found');
+    }
+    if (entry.type === 'HealthCheck') {
+        const rating = entry.healthCheckRating;
+        const allowed = Object.values(types_1.HealthCheckRating).filter((v) => typeof v === 'number');
+        if (!allowed.includes(rating)) {
+            throw new Error('Invalid health check rating');
+        }
     }
     const newEntry = Object.assign({ id: (0, uuid_1.v4)() }, entry);
     patient.entries.push(newEntry);

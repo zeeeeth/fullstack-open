@@ -5,6 +5,7 @@ import {
   NewPatient,
   NewEntry,
   Entry,
+  HealthCheckRating,
 } from '../types';
 import { v4 as uuid } from 'uuid';
 
@@ -40,6 +41,15 @@ const addEntry = (patientId: string, entry: NewEntry): Entry => {
   const patient = patients.find((p) => p.id === patientId);
   if (!patient) {
     throw new Error('Patient not found');
+  }
+  if (entry.type === 'HealthCheck') {
+    const rating = entry.healthCheckRating;
+    const allowed = Object.values(HealthCheckRating).filter(
+      (v): v is number => typeof v === 'number'
+    );
+    if (!allowed.includes(rating)) {
+      throw new Error('Invalid health check rating');
+    }
   }
   const newEntry = {
     id: uuid(),

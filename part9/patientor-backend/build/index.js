@@ -70,8 +70,14 @@ const newEntryParser = (req, _res, next) => {
     }
 };
 app.post('/api/patients/:id/entries', newEntryParser, (req, res) => {
-    const addedEntry = patientService_1.default.addEntry(req.params.id, req.body);
-    res.json(addedEntry);
+    try {
+        const addedEntry = patientService_1.default.addEntry(req.params.id, req.body);
+        res.json(addedEntry);
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : 'Something went wrong';
+        res.status(400).send({ error: message });
+    }
 });
 app.use(errorMiddleWare);
 app.listen(PORT, () => {

@@ -91,9 +91,18 @@ const newEntryParser = (
 app.post(
   '/api/patients/:id/entries',
   newEntryParser,
-  (req: Request<{ id: string }, unknown, NewEntry>, res: Response<Entry>) => {
-    const addedEntry = patientService.addEntry(req.params.id, req.body);
-    res.json(addedEntry);
+  (
+    req: Request<{ id: string }, unknown, NewEntry>,
+    res: Response<Entry | { error: string }>
+  ) => {
+    try {
+      const addedEntry = patientService.addEntry(req.params.id, req.body);
+      res.json(addedEntry);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong';
+      res.status(400).send({ error: message });
+    }
   }
 );
 
