@@ -51,6 +51,7 @@ const addEntry = (patientId: string, entry: NewEntry): Entry => {
       throw new Error('Invalid health check rating');
     }
   }
+
   const newEntry = {
     id: uuid(),
     ...entry,
